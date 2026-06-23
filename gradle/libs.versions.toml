@@ -15,7 +15,7 @@ moshi = "1.15.1"
 coil = "2.7.0"
 datastore = "1.1.1"
 glance = "1.1.1"
-hilt = "2.54"
+hilt = "2.59.2"
 hiltNavigationCompose = "1.2.0"
 ksp = "2.3.9"
 [libraries]
