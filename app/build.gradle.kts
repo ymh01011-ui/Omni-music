@@ -39,10 +39,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
     }
@@ -51,6 +47,16 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+// Kotlin compiler options must be configured as a top-level block (a sibling
+// of android {}), not nested inside it. This replaces the old deprecated
+// android.kotlinOptions { jvmTarget = "17" } syntax, which Gradle 9.x/Kotlin
+// 2.3+ reject as a hard error rather than just a warning.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
