@@ -17,8 +17,7 @@ datastore = "1.1.1"
 glance = "1.1.1"
 hilt = "2.54"
 hiltNavigationCompose = "1.2.0"
-ksp = ksp = "2.3.9"
-
+ksp = "2.3.9"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
