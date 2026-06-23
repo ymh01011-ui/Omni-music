@@ -4,11 +4,12 @@ import android.content.Context
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.provideContent
 import androidx.glance.text.Text
 
 /**
  * Placeholder home screen widget. Will be expanded in Phase 4 to show
- * artwork + playback controls bound to the live  PlaybackService state.
+ * artwork + playback controls bound to the live PlaybackService state.
  */
 class OmniMusicWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
