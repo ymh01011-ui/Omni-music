@@ -1,11 +1,14 @@
 package com.omnimusic.player.ui
 
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -57,10 +61,10 @@ fun OmniApp() {
             navController = navController,
             startDestination = OmniDestination.Home.route,
             modifier = Modifier.padding(innerPadding),
-            enterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(TRANSITION_DURATION_MS)) },
-            exitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(TRANSITION_DURATION_MS)) },
-            popEnterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(TRANSITION_DURATION_MS)) },
-            popExitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(TRANSITION_DURATION_MS)) },
+            enterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
+            exitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
+            popExitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
         ) {
             composable(OmniDestination.Home.route) { HomeScreen() }
             composable(OmniDestination.Albums.route) { AlbumsScreen() }
@@ -72,7 +76,7 @@ fun OmniApp() {
 }
 
 @Composable
-private fun OmniBottomNavBar(navController: androidx.navigation.NavHostController) {
+private fun OmniBottomNavBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -94,13 +98,13 @@ private fun OmniBottomNavBar(navController: androidx.navigation.NavHostControlle
                     }
                 },
                 icon = {
-                    androidx.compose.material3.Icon(
+                    Icon(
                         imageVector = destination.icon,
                         contentDescription = destination.label,
                     )
                 },
                 label = { Text(destination.label) },
-                colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
+                colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = OmniGreen,
                     selectedTextColor = OmniGreen,
                 ),
