@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.os.Build
 import android.provider.MediaStore
 import com.omnimusic.player.data.model.Track
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -28,7 +29,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class MediaStoreScanner @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
 ) {
 
     suspend fun scanAllTracks(): List<Track> = withContext(Dispatchers.IO) {
