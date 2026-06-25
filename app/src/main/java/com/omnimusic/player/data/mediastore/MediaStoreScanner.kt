@@ -23,7 +23,7 @@ import javax.inject.Singleton
  * Multiple artists (spec section 4): MediaStore's tagger only exposes a
  * single ARTIST string per track (Android does not natively support
  * multi-valued ID3 TPE1 frames the way some files actually tag them). We
- * split on common separators (";", "/", " feat. ", " ft. ", "&") as a
+ * split on common separators (",", ";", "&", "feat."/"ft."/"featuring") as a
  * pragmatic first pass; this can be refined later from raw tag data when the
  * Tag Editor reads files directly rather than through MediaStore.
  */
@@ -139,15 +139,15 @@ class MediaStoreScanner @Inject constructor(
     }
 
     /**
-     * Splits a raw MediaStore tag value into multiple entries. Handles the
-     * common multi-artist/genre separators seen in real-world tags. Falls
-     * back to a single-element list (or empty list) when there's nothing to
-     * split, so callers never need to null-check.
+     * Splits a raw MediaStore tag value into multiple entries on: comma,
+     * semicolon, ampersand, and any case variant of "feat."/"featuring".
+     * Falls back to a single-element list (or empty list) when there's
+     * nothing to split, so callers never need to null-check.
      */
     private fun splitMultiValue(raw: String?): List<String> {
         if (raw.isNullOrBlank() || raw == "<unknown>") return emptyList()
         return raw
-            .split(Regex(";|/| feat\\. | ft\\. | featuring |&"))
+            .split(MULTI_VALUE_SEPARATOR_REGEX)
             .map { it.trim() }
             .filter { it.isNotEmpty() }
     }
@@ -155,5 +155,16 @@ class MediaStoreScanner @Inject constructor(
     private fun Cursor.getStringOrNull(columnIndex: Int): String? {
         if (columnIndex < 0 || isNull(columnIndex)) return null
         return getString(columnIndex)
+    }
+
+    companion object {
+        // Separators: ",", ";", "&", and "feat."/"ft."/"featuring" in any
+        // case (Feat., FEAT., feat., etc.), each optionally surrounded by
+        // whitespace. RegexOption.IGNORE_CASE covers all case variants
+        // without needing to list each one explicitly.
+        private val MULTI_VALUE_SEPARATOR_REGEX = Regex(
+            """\s*,\s*|\s*;\s*|\s*&\s*|\s+feat\.\s+|\s+ft\.\s+|\s+featuring\s+""",
+            RegexOption.IGNORE_CASE,
+        )
     }
 }
