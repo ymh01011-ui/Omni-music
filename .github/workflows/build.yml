@@ -20,11 +20,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
 
-      - name: Generate gradlew
-        run: gradle wrapper --gradle-version 8.13 --distribution-type bin
-
-      - name: Make gradlew executable
-        run: chmod +x gradlew
+      - name: Setup Gradle (pinned to 8.13)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
 
       - name: Generate Keystore
         run: |
@@ -39,7 +38,7 @@ jobs:
             -dname "CN=OmniMusic, OU=App, O=App, L=Cairo, S=Cairo, C=EG"
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: gradle assembleRelease
 
       - name: Align APK
         run: |
