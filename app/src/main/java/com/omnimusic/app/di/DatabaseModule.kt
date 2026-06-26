@@ -1,8 +1,7 @@
-package com.omnimusic.app.di
+package com.omnimusic.app.data.localdb
 
 import android.content.Context
 import androidx.room.Room
-import com.omnimusic.app.data.localdb.OmniMusicDatabase
 import com.omnimusic.app.data.localdb.daos.PlaylistDao
 import dagger.Module
 import dagger.Provides
@@ -23,8 +22,8 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             OmniMusicDatabase::class.java,
-            "omni_music_database.db"
-        ).fallbackToDestructiveMigration()
+            "omni_music_database"
+        ).fallbackToDestructiveMigration() // تضمن عدم حدوث Crash للمشروع أثناء التطوير عند تغيير الهيكل
          .build()
     }
 
