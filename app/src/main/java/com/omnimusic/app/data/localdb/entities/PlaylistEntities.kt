@@ -8,14 +8,14 @@ import androidx.room.Relation
 
 @Entity(tableName = "playlists")
 data class PlaylistEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val playlistId: Long = 0, // تم تغيير الاسم هنا ليتطابق تلقائياً
     val name: String,
     val createdAt: Long = System.currentTimeMillis()
 )
 
 @Entity(tableName = "playlist_songs")
 data class PlaylistSongEntity(
-    @PrimaryKey val audioId: Long, // معرف الأغنية من الـ MediaStore
+    @PrimaryKey val audioId: Long, 
     val title: String,
     val artist: String,
     val albumId: Long,
@@ -32,17 +32,13 @@ data class PlaylistSongCrossRef(
     val audioId: Long
 )
 
-// الحل هنا: تحديد الـ parentColumn والـ entityColumn داخل الـ Junction صراحة لـ KSP
+// الآن بما أن الأسماء متطابقة تماماً، الـ KSP سيتعرف عليها فوراً بدون أي مشاكل
 data class PlaylistWithSongs(
     @Embedded val playlist: PlaylistEntity,
     @Relation(
-        parentColumn = "id",
+        parentColumn = "playlistId",
         entityColumn = "audioId",
-        associateBy = Junction(
-            value = PlaylistSongCrossRef::class,
-            parentColumn = "playlistId",
-            entityColumn = "audioId"
-        )
+        associateBy = Junction(PlaylistSongCrossRef::class)
     )
     val songs: List<PlaylistSongEntity>
 )
