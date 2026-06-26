@@ -11,7 +11,7 @@ import com.omnimusic.app.data.localdb.entities.PlaylistSongEntity
     entities = [
         PlaylistEntity::class,
         PlaylistSongEntity::class,
-        PlaylistSongCrossRef::class
+        PlaylistSongCrossRef::class // هذا السطر هو الحل الجذري للـ MissingType
     ],
     version = 1,
     exportSchema = false
