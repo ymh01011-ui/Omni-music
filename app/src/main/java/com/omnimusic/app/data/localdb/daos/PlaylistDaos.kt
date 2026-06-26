@@ -35,7 +35,7 @@ interface PlaylistDao {
     suspend fun removeSongFromPlaylist(playlistId: Long, audioId: Long)
 
     @Transaction
-    @Query("SELECT * FROM playlists WHERE id = :playlistId")
+    @Query("SELECT * FROM playlists WHERE playlistId = :playlistId") // تم التعديل هنا ليتوافق مع المعرف الجديد
     fun getPlaylistWithSongs(playlistId: Long): Flow<PlaylistWithSongs?>
 
     @Transaction
