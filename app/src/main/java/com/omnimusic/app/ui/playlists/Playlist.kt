@@ -56,7 +56,6 @@ fun PlaylistsScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            // Visual Toggles
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -75,7 +74,6 @@ fun PlaylistsScreen(
                 )
             }
 
-            // Grid View متصل بقاعدة البيانات مباشرة
             if (playlistsWithSongs.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(text = "No playlists created yet.", color = TextSecondary)
@@ -95,7 +93,7 @@ fun PlaylistsScreen(
                             title = item.playlist.name,
                             trackCount = item.songs.size,
                             artUris = artUris,
-                            onClick = { onPlaylistClick(item.playlist.id) }
+                            onClick = { onPlaylistClick(item.playlist.playlistId) } // استخدام playlistId المحدث هنا
                         )
                     }
                 }
