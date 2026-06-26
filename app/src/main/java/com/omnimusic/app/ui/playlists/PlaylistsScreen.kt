@@ -93,7 +93,7 @@ fun PlaylistsScreen(
                             title = item.playlist.name,
                             trackCount = item.songs.size,
                             artUris = artUris,
-                            onClick = { onPlaylistClick(item.playlist.playlistId) } // استخدام playlistId المحدث هنا
+                            onClick = { onPlaylistClick(item.playlist.playlistId) }
                         )
                     }
                 }
