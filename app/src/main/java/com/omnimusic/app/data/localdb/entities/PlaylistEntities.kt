@@ -32,13 +32,17 @@ data class PlaylistSongCrossRef(
     val audioId: Long
 )
 
-// دمج البيانات لجلب القائمة والأغاني التي بداخلها معاً
+// الحل هنا: تحديد الـ parentColumn والـ entityColumn داخل الـ Junction صراحة لـ KSP
 data class PlaylistWithSongs(
     @Embedded val playlist: PlaylistEntity,
     @Relation(
         parentColumn = "id",
         entityColumn = "audioId",
-        associateBy = Junction(PlaylistSongCrossRef::class)
+        associateBy = Junction(
+            value = PlaylistSongCrossRef::class,
+            parentColumn = "playlistId",
+            entityColumn = "audioId"
+        )
     )
     val songs: List<PlaylistSongEntity>
 )
