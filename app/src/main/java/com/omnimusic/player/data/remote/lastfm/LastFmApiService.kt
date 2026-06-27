@@ -6,7 +6,7 @@ import retrofit2.http.Query
 
 /**
  * Last.fm artist.getInfo client, used as a fallback per spec section 6 when
- * iTunes has no usable artwork for an artist.
+ * Deezer/iTunes have no usable artwork for an artist.
  *
  * Known caveat: Last.fm's API has been widely reported to return a generic
  * placeholder "star" image for every artist instead of real photos (their
