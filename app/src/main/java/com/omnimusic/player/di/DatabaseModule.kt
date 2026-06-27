@@ -2,6 +2,7 @@ package com.omnimusic.player.di
 
 import android.content.Context
 import androidx.room.Room
+import com.omnimusic.player.data.local.db.ArtistImageDao
 import com.omnimusic.player.data.local.db.OmniMusicDatabase
 import com.omnimusic.player.data.local.db.TrackDao
 import dagger.Module
@@ -22,10 +23,20 @@ object DatabaseModule {
             context,
             OmniMusicDatabase::class.java,
             "omni_music.db",
-        ).build()
+        )
+            // The app is still pre-release and the track/artist-image tables
+            // are caches re-populated from MediaStore/network on next launch,
+            // so destructive migration is safe and avoids hand-writing
+            // Migration objects for every schema bump during active development.
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
     @Singleton
     fun provideTrackDao(database: OmniMusicDatabase): TrackDao = database.trackDao()
+
+    @Provides
+    @Singleton
+    fun provideArtistImageDao(database: OmniMusicDatabase): ArtistImageDao = database.artistImageDao()
 }
