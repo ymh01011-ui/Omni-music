@@ -11,6 +11,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,16 +27,26 @@ import com.omnimusic.player.ui.theme.OmniGreen
 
 /**
  * Grid cell for the Artists screen: circular image (per spec section 3),
- * name below. [Artist.imageUrl] is null until the iTunes -> Last.fm ->
- * fallback pipeline (spec section 6) is implemented; until then we show a
- * themed placeholder circle with the artist's first initial.
+ * name below. [resolveImageUrl] is called the first time this card is
+ * composed for a given artist to lazily fetch their image via the Deezer ->
+ * iTunes -> Last.fm -> fallback pipeline (spec section 6); the caller (the
+ * ArtistsViewModel) is responsible for caching so repeat calls are cheap.
+ * While unresolved (or if nothing was found anywhere), we show a themed
+ * placeholder circle with the artist's first initial.
  */
 @Composable
 fun ArtistCard(
     artist: Artist,
+    resolveImageUrl: suspend (String) -> String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var resolvedImageUrl by remember(artist.name) { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(artist.name) {
+        resolvedImageUrl = resolveImageUrl(artist.name)
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -44,9 +59,9 @@ fun ArtistCard(
                 .aspectRatio(1f)
                 .clip(CircleShape),
         ) {
-            if (artist.imageUrl != null) {
+            if (resolvedImageUrl != null) {
                 AsyncImage(
-                    model = artist.imageUrl,
+                    model = resolvedImageUrl,
                     contentDescription = artist.name,
                     modifier = Modifier.fillMaxWidth(),
                 )
