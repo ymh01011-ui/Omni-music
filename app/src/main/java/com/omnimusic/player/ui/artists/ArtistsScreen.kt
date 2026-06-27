@@ -70,14 +70,20 @@ fun ArtistsScreen(
                     sortAscending = uiState.sortAscending,
                     onSortOptionClick = viewModel::setSortOption,
                 )
-                ArtistsGrid(artists = uiState.artists)
+                ArtistsGrid(
+                    artists = uiState.artists,
+                    resolveImageUrl = viewModel::getArtistImageUrl,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ArtistsGrid(artists: List<Artist>) {
+private fun ArtistsGrid(
+    artists: List<Artist>,
+    resolveImageUrl: suspend (String) -> String?,
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         modifier = Modifier.fillMaxSize(),
@@ -85,6 +91,7 @@ private fun ArtistsGrid(artists: List<Artist>) {
         items(artists, key = { it.name }) { artist ->
             ArtistCard(
                 artist = artist,
+                resolveImageUrl = resolveImageUrl,
                 onClick = { /* TODO: navigate to artist detail once that destination exists */ },
             )
         }
