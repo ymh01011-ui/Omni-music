@@ -3,6 +3,7 @@ package com.omnimusic.player.ui.artists
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.omnimusic.player.data.model.Artist
+import com.omnimusic.player.data.repository.ArtistImageRepository
 import com.omnimusic.player.data.repository.ArtistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ data class ArtistsUiState(
 @HiltViewModel
 class ArtistsViewModel @Inject constructor(
     repository: ArtistRepository,
+    private val imageRepository: ArtistImageRepository,
 ) : ViewModel() {
 
     private val sortOption = MutableStateFlow(ArtistSortOption.NAME)
@@ -45,6 +47,15 @@ class ArtistsViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = ArtistsUiState(),
     )
+
+    /**
+     * Resolves an artist's image via the Deezer -> iTunes -> Last.fm ->
+     * fallback pipeline (spec section 6). Called lazily by each [ArtistCard]
+     * as it's composed; results are cached in Room by [ArtistImageRepository]
+     * so this is cheap on repeat calls for the same artist.
+     */
+    suspend fun getArtistImageUrl(artistName: String): String? =
+        imageRepository.getArtistImageUrl(artistName)
 
     fun setSortOption(option: ArtistSortOption) {
         if (sortOption.value == option) {
