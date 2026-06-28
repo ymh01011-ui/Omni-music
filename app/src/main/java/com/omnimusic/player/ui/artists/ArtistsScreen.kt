@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omnimusic.player.data.model.Artist
+import com.omnimusic.player.data.repository.ArtistImageResult
 import com.omnimusic.player.ui.components.ArtistCard
 
 /**
@@ -82,7 +83,7 @@ fun ArtistsScreen(
 @Composable
 private fun ArtistsGrid(
     artists: List<Artist>,
-    resolveImageUrl: suspend (String) -> String?,
+    resolveImageUrl: suspend (String) -> ArtistImageResult,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
