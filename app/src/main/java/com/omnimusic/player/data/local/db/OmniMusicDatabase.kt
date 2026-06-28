@@ -4,17 +4,24 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 
 /**
- * App-wide Room database. Phase 3 will add Favorites, History, Most Played,
- * and Playlist tables here as additional entities + further version bumps
- * (kept in one DB so playlist/favorite rows can reference track IDs with
- * simple foreign keys later).
+ * App-wide Room database. Holds the MediaStore track cache, the resolved
+ * artist-image cache, and now (v3) the Playlists/Favorites/History tables
+ * from spec section 3/7.
  */
 @Database(
-    entities = [TrackEntity::class, ArtistImageEntity::class],
-    version = 2,
+    entities = [
+        TrackEntity::class,
+        ArtistImageEntity::class,
+        PlaylistEntity::class,
+        PlaylistTrackCrossRef::class,
+        FavoriteEntity::class,
+        PlayHistoryEntity::class,
+    ],
+    version = 3,
     exportSchema = false,
 )
 abstract class OmniMusicDatabase : RoomDatabase() {
     abstract fun trackDao(): TrackDao
     abstract fun artistImageDao(): ArtistImageDao
+    abstract fun playlistDao(): PlaylistDao
 }
