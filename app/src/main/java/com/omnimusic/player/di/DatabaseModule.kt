@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.omnimusic.player.data.local.db.ArtistImageDao
 import com.omnimusic.player.data.local.db.OmniMusicDatabase
+import com.omnimusic.player.data.local.db.PlaylistDao
 import com.omnimusic.player.data.local.db.TrackDao
 import dagger.Module
 import dagger.Provides
@@ -39,4 +40,8 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideArtistImageDao(database: OmniMusicDatabase): ArtistImageDao = database.artistImageDao()
+
+    @Provides
+    @Singleton
+    fun providePlaylistDao(database: OmniMusicDatabase): PlaylistDao = database.playlistDao()
 }
