@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.omnimusic.player.data.model.Artist
 import com.omnimusic.player.data.repository.ArtistImageRepository
+import com.omnimusic.player.data.repository.ArtistImageResult
 import com.omnimusic.player.data.repository.ArtistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +55,7 @@ class ArtistsViewModel @Inject constructor(
      * as it's composed; results are cached in Room by [ArtistImageRepository]
      * so this is cheap on repeat calls for the same artist.
      */
-    suspend fun getArtistImageUrl(artistName: String): String? =
+    suspend fun getArtistImageUrl(artistName: String): ArtistImageResult =
         imageRepository.getArtistImageUrl(artistName)
 
     fun setSortOption(option: ArtistSortOption) {
