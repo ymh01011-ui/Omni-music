@@ -70,3 +70,17 @@ data class MusicFolder(
     val name: String,
     val songCount: Int,
 )
+
+/**
+ * A user-created (or system, e.g. Favorites) collection of tracks, per spec
+ * section 3's Playlists screen. [coverArtUris] holds up to 4 album art URIs
+ * sampled from the playlist's tracks, used to render the mosaic cover shown
+ * in the reference design.
+ */
+data class Playlist(
+    val id: Long,
+    val name: String,
+    val songCount: Int,
+    val coverArtUris: List<String>,
+    val isSystemFavorites: Boolean = false,
+)
