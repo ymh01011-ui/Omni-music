@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.omnimusic.player.data.model.Artist
+import com.omnimusic.player.data.repository.ArtistImageResult
 import com.omnimusic.player.ui.theme.OmniGreen
 
 /**
@@ -35,28 +36,27 @@ import com.omnimusic.player.ui.theme.OmniGreen
  * While unresolved (or if nothing was found anywhere), we show a themed
  * placeholder circle with the artist's first initial.
  *
- * TEMPORARY DEBUG: shows the raw resolved value (or exception message) as
- * small red text under the song count, so failures are visible directly in
- * a screenshot without needing Logcat/adb access. Remove once image loading
- * is confirmed working.
+ * TEMPORARY DEBUG: shows the full source-by-source trace as small red text,
+ * so failures are visible directly in a screenshot without needing
+ * Logcat/adb access. Remove once image loading is confirmed working.
  */
 @Composable
 fun ArtistCard(
     artist: Artist,
-    resolveImageUrl: suspend (String) -> String?,
+    resolveImageUrl: suspend (String) -> ArtistImageResult,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var resolvedImageUrl by remember(artist.name) { mutableStateOf<String?>(null) }
-    var debugInfo by remember(artist.name) { mutableStateOf("loading...") }
+    var debugTrace by remember(artist.name) { mutableStateOf("loading...") }
 
     LaunchedEffect(artist.name) {
         try {
-            val url = resolveImageUrl(artist.name)
-            resolvedImageUrl = url
-            debugInfo = url ?: "null (no image found)"
+            val result = resolveImageUrl(artist.name)
+            resolvedImageUrl = result.imageUrl
+            debugTrace = result.trace
         } catch (e: Exception) {
-            debugInfo = "ERROR: ${e.javaClass.simpleName}: ${e.message}"
+            debugTrace = "CALLER EXC: ${e.javaClass.simpleName}: ${e.message}"
         }
     }
 
@@ -111,10 +111,10 @@ fun ArtistCard(
             overflow = TextOverflow.Ellipsis,
         )
         Text(
-            text = debugInfo,
+            text = debugTrace,
             style = MaterialTheme.typography.bodySmall,
             color = Color.Red,
-            maxLines = 2,
+            maxLines = 4,
             overflow = TextOverflow.Ellipsis,
         )
     }
