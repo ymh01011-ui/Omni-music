@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -35,10 +34,6 @@ import com.omnimusic.player.ui.theme.OmniGreen
  * ArtistsViewModel) is responsible for caching so repeat calls are cheap.
  * While unresolved (or if nothing was found anywhere), we show a themed
  * placeholder circle with the artist's first initial.
- *
- * TEMPORARY DEBUG: shows the full source-by-source trace as small red text,
- * so failures are visible directly in a screenshot without needing
- * Logcat/adb access. Remove once image loading is confirmed working.
  */
 @Composable
 fun ArtistCard(
@@ -48,16 +43,9 @@ fun ArtistCard(
     modifier: Modifier = Modifier,
 ) {
     var resolvedImageUrl by remember(artist.name) { mutableStateOf<String?>(null) }
-    var debugTrace by remember(artist.name) { mutableStateOf("loading...") }
 
     LaunchedEffect(artist.name) {
-        try {
-            val result = resolveImageUrl(artist.name)
-            resolvedImageUrl = result.imageUrl
-            debugTrace = result.trace
-        } catch (e: Exception) {
-            debugTrace = "CALLER EXC: ${e.javaClass.simpleName}: ${e.message}"
-        }
+        resolvedImageUrl = resolveImageUrl(artist.name).imageUrl
     }
 
     Column(
@@ -108,13 +96,6 @@ fun ArtistCard(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            text = debugTrace,
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Red,
-            maxLines = 4,
             overflow = TextOverflow.Ellipsis,
         )
     }
