@@ -16,6 +16,10 @@ interface TrackDao {
     @Query("SELECT * FROM tracks WHERE id = :id")
     suspend fun getTrackById(id: Long): TrackEntity?
 
+    /** Most recently added tracks first, for the Home "Recently added songs" section. */
+    @Query("SELECT * FROM tracks ORDER BY dateAdded DESC LIMIT :limit")
+    fun observeRecentlyAddedTracks(limit: Int): Flow<List<TrackEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(tracks: List<TrackEntity>)
 
