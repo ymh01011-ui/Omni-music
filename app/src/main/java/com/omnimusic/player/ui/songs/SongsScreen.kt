@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Shuffle
@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.omnimusic.player.ui.LocalPlaybackViewModel
 import com.omnimusic.player.ui.components.TrackRow
 import com.omnimusic.player.util.AudioPermission
 
@@ -57,6 +58,7 @@ fun SongsScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    val playbackViewModel = LocalPlaybackViewModel.current
 
     var hasPermission by rememberSaveable {
         mutableStateOf(
@@ -98,7 +100,11 @@ fun SongsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            else -> SongsList(uiState = uiState, onSortOptionClick = viewModel::setSortOption)
+            else -> SongsList(
+                uiState = uiState,
+                onSortOptionClick = viewModel::setSortOption,
+                onTrackClick = { index -> playbackViewModel.playQueue(uiState.tracks, index) },
+            )
         }
     }
 }
@@ -130,6 +136,7 @@ private fun PermissionRequest(onRequestPermission: () -> Unit) {
 private fun SongsList(
     uiState: SongsUiState,
     onSortOptionClick: (SongSortOption) -> Unit,
+    onTrackClick: (index: Int) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         SongsHeader(
@@ -140,10 +147,10 @@ private fun SongsList(
         )
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(uiState.tracks, key = { it.id }) { track ->
+            itemsIndexed(uiState.tracks, key = { _, track -> track.id }) { index, track ->
                 TrackRow(
                     track = track,
-                    onClick = { /* TODO: start playback once the playback engine exists */ },
+                    onClick = { onTrackClick(index) },
                     onMoreClick = { /* TODO: open the full 3-dot context menu (spec section 3) */ },
                 )
             }
