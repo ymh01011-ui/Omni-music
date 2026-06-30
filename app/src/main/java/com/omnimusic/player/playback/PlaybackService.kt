@@ -1,7 +1,7 @@
 package com.omnimusic.player.playback
 
-import android.content.pm.PackageManager
-import androidx.media3.common.Player
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -10,11 +10,13 @@ import dagger.hilt.android.AndroidEntryPoint
 /**
  * Foreground service hosting the MediaSession + ExoPlayer instance.
  *
- * This is currently a minimal stub: it creates a bare ExoPlayer and exposes
- * it through a MediaSession so the manifest declaration (and Android
- * Auto / notification controls) resolve correctly. The real queue manager,
- * gapless/crossfade configuration, and repository-backed MediaItem loading
- * will be added in the dedicated "playback engine" implementation step.
+ * Queue building and playback control (play/pause/skip/seek) are driven
+ * entirely by the client via MediaController (see PlaybackRepository)
+ * using standard Player commands - this service just needs to host a
+ * correctly configured player. Audio focus handling and "pause on becoming
+ * noisy" (headphones unplugged) are enabled via AudioAttributes +
+ * ExoPlayer.Builder.setHandleAudioBecomingNoisy, both expected behavior
+ * for any music player.
  */
 @AndroidEntryPoint
 class PlaybackService : MediaSessionService() {
@@ -23,7 +25,17 @@ class PlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
-        val player = ExoPlayer.Builder(this).build()
+
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .build()
+
+        val player = ExoPlayer.Builder(this)
+            .setAudioAttributes(audioAttributes, /* handleAudioFocus= */ true)
+            .setHandleAudioBecomingNoisy(true)
+            .build()
+
         mediaSession = MediaSession.Builder(this, player).build()
     }
 
