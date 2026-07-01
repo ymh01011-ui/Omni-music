@@ -46,30 +46,29 @@ fun HomeScreen(
     } else {
         LazyColumn(
             modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 40.dp)
+            // تم تصفير الـ top padding تماماً لمنع نزول العناصر لتحت بزيادة
+            contentPadding = PaddingValues(top = 0.dp, bottom = 32.dp)
         ) {
             
-            // 1. شريط البحث في item منفصل ومستقل ليعود لعرض الشاشة الكاملة
+            // 1. شريط البحث - تم تقليل الـ padding لـ 10.dp ليكون أعرض ويطابق المرجع تماماً
             item {
                 SearchBar(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 10.dp, top = 8.dp),
                     onClick = { /* TODO */ }
                 )
             }
 
-            // مسافة ملاحمة بين البحث والدوائر
+            // مسافة رأسية صغيرة ومكبوسة بين البحث والدوائر
             item {
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // 2. الدوائر الملونة مفرودة ومسنترة
+            // 2. الدوائر الملونة مسنترة وملمومة
             item {
                 QuickAccessRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     onHistoryClick = { /* TODO */ },
                     onFavoritesClick = { /* TODO */ },
                     onMostPlayedClick = { /* TODO */ },
@@ -77,30 +76,30 @@ fun HomeScreen(
                 )
             }
 
-            // مسافة ملاحمة بين الدوائر وقسم الـ Recently added
+            // مسافة مكبوسة لإخراج قسم Recently added لفوق ومنعه من السقوط لأسفل
             item {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             // 3. قسم الأغاني المضافة حديثاً
             item {
                 RecentlyAddedSection(data = uiState.data)
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
             }
 
-            // 4. قسم الألبومات المشغلة مؤخراً
+            // 4. قسم الألبومات
             item {
                 RecentAlbumsSection(data = uiState.data)
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
             }
 
-            // 5. قسم الفنانين الحاليين
+            // 5. قسم الفنانين
             item {
                 RecentArtistsSection(data = uiState.data, viewModel = viewModel)
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
             }
 
-            // 6. القائمة المفضلة
+            // 6. القسم المفضل
             item {
                 FavoritesSection(data = uiState.data)
             }
@@ -112,7 +111,7 @@ fun HomeScreen(
 private fun RecentlyAddedSection(data: HomeData) {
     if (data.recentlyAddedSongs.isEmpty()) return
 
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionHeader(title = "Recently added", onSeeAllClick = { /* TODO */ })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -129,7 +128,7 @@ private fun RecentlyAddedSection(data: HomeData) {
 private fun RecentAlbumsSection(data: HomeData) {
     if (data.recentlyPlayedAlbums.isEmpty()) return
 
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionHeader(title = "Recently played albums", onSeeAllClick = { /* TODO */ })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -146,7 +145,7 @@ private fun RecentAlbumsSection(data: HomeData) {
 private fun RecentArtistsSection(data: HomeData, viewModel: HomeViewModel) {
     if (data.recentArtists.isEmpty()) return
 
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionHeader(title = "Recent Artists", onSeeAllClick = { /* TODO */ })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -167,7 +166,7 @@ private fun RecentArtistsSection(data: HomeData, viewModel: HomeViewModel) {
 private fun FavoritesSection(data: HomeData) {
     if (data.favoriteSongs.isEmpty()) return
 
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionHeader(title = "Favorites", onSeeAllClick = { /* TODO */ })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
