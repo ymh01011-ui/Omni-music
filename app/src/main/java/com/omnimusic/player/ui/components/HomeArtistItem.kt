@@ -52,19 +52,19 @@ fun HomeArtistItem(
     ) {
         Box(
             modifier = Modifier
-                .size(96.dp)
+                .size(150.dp)
                 .clip(CircleShape),
         ) {
             if (resolvedImageUrl != null) {
                 AsyncImage(
                     model = resolvedImageUrl,
                     contentDescription = artist.name,
-                    modifier = Modifier.size(96.dp),
+                    modifier = Modifier.size(150.dp),
                 )
             } else {
                 Box(
                     modifier = Modifier
-                        .size(96.dp)
+                        .size(150.dp)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center,
                 ) {
