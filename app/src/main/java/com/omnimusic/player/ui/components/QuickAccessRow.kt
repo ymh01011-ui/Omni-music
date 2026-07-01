@@ -44,11 +44,9 @@ fun QuickAccessRow(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp), // تم إزالة الـ horizontal padding الداخلي لمنع التضاعف مع الـ HomeScreen
-        // السر هنا: تجميع العناصر من البداية (Start) بتباعد متقارب وثابت (16.dp) بدلاً من تمطيطها
-        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
+        modifier = modifier.fillMaxWidth(),
+        // التعديل: سنترة الدوائر في منتصف الشاشة تماماً مع الحفاظ على تباعد 16dp بين كل دائرة وأخرى
+        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
     ) {
         QuickAccessItem("History", Icons.Filled.History, AccentHistoryBlue, onHistoryClick)
