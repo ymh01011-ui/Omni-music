@@ -63,8 +63,8 @@ fun HomeSongCard(
 
     Row(
         modifier = modifier
-            .size(width = 245.dp, height = 115.dp) // الأبعاد المتطابقة تماماً مع التصميم المرجعي
-            .clip(RoundedCornerShape(20.dp))
+            .size(width = 245.dp, height = 130.dp) // الأبعاد المتطابقة تماماً مع التصميم المرجعي
+            .clip(RoundedCornerShape(15.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
