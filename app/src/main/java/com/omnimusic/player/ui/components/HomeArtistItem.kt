@@ -47,7 +47,7 @@ fun HomeArtistItem(
 
     Column(
         modifier = modifier
-            .width(96.dp)
+            .width(150.dp)
             .clickable(onClick = onClick),
     ) {
         Box(
