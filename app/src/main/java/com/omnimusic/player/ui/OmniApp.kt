@@ -4,6 +4,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -44,10 +45,6 @@ private const val TRANSITION_DURATION_MS = 250
 /**
  * App-wide [PlaybackViewModel] instance, shared by every screen that needs
  * to start or observe playback (Mini Player, Songs, Albums, Home, etc.).
- * Obtained once at the [OmniApp] root via [hiltViewModel] (which scopes it
- * to the hosting Activity by default), then handed down through this
- * CompositionLocal so screens don't each create their own disconnected
- * instance.
  */
 val LocalPlaybackViewModel = compositionLocalOf<PlaybackViewModel> {
     error("LocalPlaybackViewModel not provided - must be set in OmniApp")
@@ -86,13 +83,17 @@ fun OmniApp() {
             NavHost(
                 navController = navController,
                 startDestination = OmniDestination.Home.route,
-                modifier = Modifier.padding(innerPadding),
+                // التعديل الجوهري: نأخذ الحشو السفلي فقط لحماية أزرار التنقل والـ MiniPlayer، ونلغي الحشو العلوي تماماً لتتحرر الشاشة وتصعد لأعلى
+                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
                 enterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
                 exitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
                 popEnterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
                 popExitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
             ) {
-                composable(OmniDestination.Home.route) { HomeScreen() }
+                composable(OmniDestination.Home.route) { 
+                    // تمرير Modifier.fillMaxSize() لضمان مطابقة الشاشة
+                    HomeScreen(modifier = Modifier.fillMaxSize()) 
+                }
                 composable(OmniDestination.Albums.route) { AlbumsScreen() }
                 composable(OmniDestination.Songs.route) { SongsScreen() }
                 composable(OmniDestination.Playlists.route) { PlaylistsScreen() }
@@ -115,8 +116,6 @@ private fun OmniBottomNavBar(navController: NavHostController) {
                 selected = selected,
                 onClick = {
                     navController.navigate(destination.route) {
-                        // Standard single-top tab navigation: avoid stacking
-                        // duplicate destinations, restore state when reselecting.
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
