@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -38,7 +39,7 @@ fun HomeScreen(
 
     if (uiState.isLoading) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -46,29 +47,32 @@ fun HomeScreen(
     } else {
         LazyColumn(
             modifier = modifier.fillMaxSize(),
-            // تم تصفير الـ top padding تماماً لمنع نزول العناصر لتحت بزيادة
-            contentPadding = PaddingValues(top = 0.dp, bottom = 32.dp)
+            contentPadding = PaddingValues(top = 0.dp, bottom = 16.dp)
         ) {
             
-            // 1. شريط البحث - تم تقليل الـ padding لـ 10.dp ليكون أعرض ويطابق المرجع تماماً
+            // 1. شريط البحث - تم إضافة statusBarsPadding ليتمركز أسفل شريط النظام العلوي مباشرة وبثبات تام،
+            // وتم تصفير الـ padding الجانبي (0.dp) ليأخذ عرض الشاشة بالكامل ويمتد من الحافة للحافة كالمرجع.
             item {
                 SearchBar(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp, top = 8.dp),
+                        .statusBarsPadding() // يضمن التموضع الذكي أسفل أيقونات الساعة والبطارية دون تداخل وبأعلى نقطة
+                        .padding(horizontal = 0.dp, top = 4.dp), 
                     onClick = { /* TODO */ }
                 )
             }
 
-            // مسافة رأسية صغيرة ومكبوسة بين البحث والدوائر
+            // مسافة ملاحمة مكبوسة ومثالية لتلتصق الدوائر بالبحث
             item {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
             }
 
             // 2. الدوائر الملونة مسنترة وملمومة
             item {
                 QuickAccessRow(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     onHistoryClick = { /* TODO */ },
                     onFavoritesClick = { /* TODO */ },
                     onMostPlayedClick = { /* TODO */ },
@@ -76,30 +80,30 @@ fun HomeScreen(
                 )
             }
 
-            // مسافة مكبوسة لإخراج قسم Recently added لفوق ومنعه من السقوط لأسفل
+            // تلاحم مباشر وقريب لمنع هبوط كتلة الأقسام لأسفل الشاشة
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
             }
 
-            // 3. قسم الأغاني المضافة حديثاً
+            // 3. قسم Recently added
             item {
                 RecentlyAddedSection(data = uiState.data)
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 4. قسم الألبومات
+            // 4. قسم الألبومات المشغلة مؤخراً
             item {
                 RecentAlbumsSection(data = uiState.data)
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
             // 5. قسم الفنانين
             item {
                 RecentArtistsSection(data = uiState.data, viewModel = viewModel)
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 6. القسم المفضل
+            // 6. قسم المفضلة
             item {
                 FavoritesSection(data = uiState.data)
             }
