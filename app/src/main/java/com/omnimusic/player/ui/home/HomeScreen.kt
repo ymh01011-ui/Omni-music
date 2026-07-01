@@ -44,55 +44,63 @@ fun HomeScreen(
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
     } else {
-        // قمنا بإلغاء verticalArrangement الموحد للتحكم في المسافات بشكل يدوي ودقيق
         LazyColumn(
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(top = 16.dp, bottom = 40.dp)
         ) {
             
-            // تجميع العناصر العلوية الثلاثة في بلوك واحد لضمان التلاحم والتقارب الفائق كفئة واحدة
+            // 1. شريط البحث في item منفصل ومستقل ليعود لعرض الشاشة الكاملة
             item {
                 SearchBar(
                     modifier = Modifier
-                        .fillMaxWidth() // إجبار شريط البحث على أخذ العرض كاملًا
+                        .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     onClick = { /* TODO */ }
                 )
-                
-                // مسافة صغيرة ومثالية بين شريط البحث والدوائر الملونة
+            }
+
+            // مسافة ملاحمة بين البحث والدوائر
+            item {
                 Spacer(modifier = Modifier.height(18.dp))
-                
+            }
+
+            // 2. الدوائر الملونة مفرودة ومسنترة
+            item {
                 QuickAccessRow(
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     onHistoryClick = { /* TODO */ },
                     onFavoritesClick = { /* TODO */ },
                     onMostPlayedClick = { /* TODO */ },
                     onShuffleClick = { /* TODO */ }
                 )
-                
-                // مسافة انتقالية متناسقة قبل ظهور قسم Recently Added
+            }
+
+            // مسافة ملاحمة بين الدوائر وقسم الـ Recently added
+            item {
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // قسم الأغاني الحديثة + ترك مسافة مريحة للأقسام الكبرى بالأسفل (Breathing Room)
+            // 3. قسم الأغاني المضافة حديثاً
             item {
                 RecentlyAddedSection(data = uiState.data)
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // قسم الألبومات المشغلة مؤخراً
+            // 4. قسم الألبومات المشغلة مؤخراً
             item {
                 RecentAlbumsSection(data = uiState.data)
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // قسم الفنانين
+            // 5. قسم الفنانين الحاليين
             item {
                 RecentArtistsSection(data = uiState.data, viewModel = viewModel)
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // قسم المفضلة
+            // 6. القائمة المفضلة
             item {
                 FavoritesSection(data = uiState.data)
             }
