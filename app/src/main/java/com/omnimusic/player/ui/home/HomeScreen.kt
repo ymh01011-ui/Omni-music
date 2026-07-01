@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -41,45 +44,55 @@ fun HomeScreen(
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
     } else {
+        // قمنا بإلغاء verticalArrangement الموحد للتحكم في المسافات بشكل يدوي ودقيق
         LazyColumn(
             modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 24.dp, bottom = 40.dp),
-            verticalArrangement = Arrangement.spacedBy(28.dp)
+            contentPadding = PaddingValues(top = 16.dp, bottom = 40.dp)
         ) {
-            // 1. شريط البحث - تمرير الـ onClick المطلوبة
+            
+            // تجميع العناصر العلوية الثلاثة في بلوك واحد لضمان التلاحم والتقارب الفائق كفئة واحدة
             item {
                 SearchBar(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    onClick = { /* TODO: إفتح شاشة البحث هنا */ }
+                    modifier = Modifier
+                        .fillMaxWidth() // إجبار شريط البحث على أخذ العرض كاملًا
+                        .padding(horizontal = 16.dp),
+                    onClick = { /* TODO */ }
                 )
-            }
-
-            // 2. أزرار الوصول السريع - تمرير الـ 4 Lambdas لتجنب الـ Missing Parameters
-            item {
+                
+                // مسافة صغيرة ومثالية بين شريط البحث والدوائر الملونة
+                Spacer(modifier = Modifier.height(18.dp))
+                
                 QuickAccessRow(
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     onHistoryClick = { /* TODO */ },
                     onFavoritesClick = { /* TODO */ },
                     onMostPlayedClick = { /* TODO */ },
                     onShuffleClick = { /* TODO */ }
                 )
+                
+                // مسافة انتقالية متناسقة قبل ظهور قسم Recently Added
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 3. الأغاني المضافة حديثاً
+            // قسم الأغاني الحديثة + ترك مسافة مريحة للأقسام الكبرى بالأسفل (Breathing Room)
             item {
                 RecentlyAddedSection(data = uiState.data)
+                Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // 4. الألبومات المشغلة مؤخراً (تم تعديلها داخلياً)
+            // قسم الألبومات المشغلة مؤخراً
             item {
                 RecentAlbumsSection(data = uiState.data)
+                Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // 5. الفنانين الحاليين
+            // قسم الفنانين
             item {
                 RecentArtistsSection(data = uiState.data, viewModel = viewModel)
+                Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // 6. القائمة المفضلة
+            // قسم المفضلة
             item {
                 FavoritesSection(data = uiState.data)
             }
@@ -92,19 +105,13 @@ private fun RecentlyAddedSection(data: HomeData) {
     if (data.recentlyAddedSongs.isEmpty()) return
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SectionHeader(
-            title = "Recently added", 
-            onSeeAllClick = { /* TODO */ }
-        )
+        SectionHeader(title = "Recently added", onSeeAllClick = { /* TODO */ })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(data.recentlyAddedSongs, key = { it.id }) { track ->
-                HomeSongCard(
-                    track = track,
-                    onClick = { /* TODO */ },
-                )
+                HomeSongCard(track = track, onClick = { /* TODO */ })
             }
         }
     }
@@ -112,24 +119,16 @@ private fun RecentlyAddedSection(data: HomeData) {
 
 @Composable
 private fun RecentAlbumsSection(data: HomeData) {
-    // تصحيح الاستدعاء ليكون recentlyPlayedAlbums بدلاً من recentAlbums تماشياً مع الـ Model الخاص بك
     if (data.recentlyPlayedAlbums.isEmpty()) return
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SectionHeader(
-            title = "Recently played albums", 
-            onSeeAllClick = { /* TODO */ }
-        )
+        SectionHeader(title = "Recently played albums", onSeeAllClick = { /* TODO */ })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(data.recentlyPlayedAlbums, key = { it.name }) { album ->
-                HomeAlbumCard(
-                    album = album,
-                    onClick = { /* TODO */ },
-                    onPlayClick = { /* TODO */ }
-                )
+                HomeAlbumCard(album = album, onClick = { /* TODO */ }, onPlayClick = { /* TODO */ })
             }
         }
     }
@@ -140,10 +139,7 @@ private fun RecentArtistsSection(data: HomeData, viewModel: HomeViewModel) {
     if (data.recentArtists.isEmpty()) return
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SectionHeader(
-            title = "Recent Artists", 
-            onSeeAllClick = { /* TODO */ }
-        )
+        SectionHeader(title = "Recent Artists", onSeeAllClick = { /* TODO */ })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -164,19 +160,13 @@ private fun FavoritesSection(data: HomeData) {
     if (data.favoriteSongs.isEmpty()) return
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SectionHeader(
-            title = "Favorites", 
-            onSeeAllClick = { /* TODO */ }
-        )
+        SectionHeader(title = "Favorites", onSeeAllClick = { /* TODO */ })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(data.favoriteSongs, key = { it.id }) { track ->
-                HomeSongCard(
-                    track = track,
-                    onClick = { /* TODO */ },
-                )
+                HomeSongCard(track = track, onClick = { /* TODO */ })
             }
         }
     }
