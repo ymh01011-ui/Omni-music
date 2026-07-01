@@ -41,23 +41,27 @@ fun HomeScreen(
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
     } else {
-        // سر التباعد الاحترافي: إعطاء مسافة 28.dp بين كل قسم والتالي له
-        // مع ترك مساحة علوية وسفلية مريحة للشاشة بأكملها
         LazyColumn(
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(top = 24.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
-            // 1. شريط البحث مع بادئة جانبية متناسقة
+            // 1. شريط البحث - تمرير الـ onClick المطلوبة
             item {
                 SearchBar(
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    onClick = { /* TODO: إفتح شاشة البحث هنا */ }
                 )
             }
 
-            // 2. أزرار الوصول السريع الأربعة
+            // 2. أزرار الوصول السريع - تمرير الـ 4 Lambdas لتجنب الـ Missing Parameters
             item {
-                QuickAccessRow()
+                QuickAccessRow(
+                    onHistoryClick = { /* TODO */ },
+                    onFavoritesClick = { /* TODO */ },
+                    onMostPlayedClick = { /* TODO */ },
+                    onShuffleClick = { /* TODO */ }
+                )
             }
 
             // 3. الأغاني المضافة حديثاً
@@ -65,7 +69,7 @@ fun HomeScreen(
                 RecentlyAddedSection(data = uiState.data)
             }
 
-            // 4. الألبومات المشغلة مؤخراً
+            // 4. الألبومات المشغلة مؤخراً (تم تعديلها داخلياً)
             item {
                 RecentAlbumsSection(data = uiState.data)
             }
@@ -87,7 +91,6 @@ fun HomeScreen(
 private fun RecentlyAddedSection(data: HomeData) {
     if (data.recentlyAddedSongs.isEmpty()) return
 
-    // تجميع الـ Header والـ List داخل Column لضبط المسافة الداخلية بين العنوان والكروت بدقة
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SectionHeader(
             title = "Recently added", 
@@ -109,7 +112,8 @@ private fun RecentlyAddedSection(data: HomeData) {
 
 @Composable
 private fun RecentAlbumsSection(data: HomeData) {
-    if (data.recentAlbums.isEmpty()) return
+    // تصحيح الاستدعاء ليكون recentlyPlayedAlbums بدلاً من recentAlbums تماشياً مع الـ Model الخاص بك
+    if (data.recentlyPlayedAlbums.isEmpty()) return
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SectionHeader(
@@ -120,7 +124,7 @@ private fun RecentAlbumsSection(data: HomeData) {
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(data.recentAlbums, key = { it.name }) { album ->
+            items(data.recentlyPlayedAlbums, key = { it.name }) { album ->
                 HomeAlbumCard(
                     album = album,
                     onClick = { /* TODO */ },
