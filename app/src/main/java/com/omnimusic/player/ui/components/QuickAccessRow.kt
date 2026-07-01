@@ -46,8 +46,10 @@ fun QuickAccessRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(vertical = 4.dp), // تم إزالة الـ horizontal padding الداخلي لمنع التضاعف مع الـ HomeScreen
+        // السر هنا: تجميع العناصر من البداية (Start) بتباعد متقارب وثابت (16.dp) بدلاً من تمطيطها
+        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         QuickAccessItem("History", Icons.Filled.History, AccentHistoryBlue, onHistoryClick)
         QuickAccessItem("Favorites", Icons.Filled.Favorite, AccentFavoritesRed, onFavoritesClick)
