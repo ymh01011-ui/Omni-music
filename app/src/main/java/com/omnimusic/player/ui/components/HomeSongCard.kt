@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -40,79 +43,36 @@ fun HomeSongCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // ألوان افتراضية بيضاء في حال لم ينتهِ تحليل ألوان الغلاف بعد
+    // الألوان الافتراضية للكارت قبل سحب ألوان الغلاف (تتماشى مع التصميم الداكن)
+    var backgroundColor by remember(track.id) { mutableStateOf(Color(0xFF151515)) }
     var titleColor by remember(track.id) { mutableStateOf(Color.White) }
-    var artistColor by remember(track.id) { mutableStateOf(Color.White.copy(alpha = 0.7f)) }
+    var artistColor by remember(track.id) { mutableStateOf(Color.White.copy(alpha = 0.65f)) }
 
-    Box(
+    Row(
         modifier = modifier
-            .size(width = 250.dp, height = 140.dp) // الأبعاد المتناسقة تماماً مع شاشة الـ Home في الصورة 1000234443.jpg
-            .clip(RoundedCornerShape(20.dp)) // حواف دائرية ناعمة تطابق التصميم المرجعي
-            .clickable(onClick = onClick)
+            .size(width = 245.dp, height = 115.dp) // ضبط الأبعاد والارتفاع بدقة ليكون متناسقاً تماماً مع كروت الـ Albums بالأسفل
+            .clip(RoundedCornerShape(20.dp))
+            .background(backgroundColor)
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        if (track.albumArtUri != null) {
-            AsyncImage(
-                model = track.albumArtUri,
-                contentDescription = track.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                onState = { state ->
-                    // اقتناص الغلاف عند تحميله بنجاح لتحليل ألوانه ديناميكياً
-                    if (state is AsyncImagePainter.State.Success) {
-                        val bitmap = (state.result.drawable as? BitmapDrawable)?.bitmap
-                        bitmap?.let { bmp ->
-                            Palette.from(bmp).generate { palette ->
-                                palette?.let { pal ->
-                                    // فحص ذكي: إذا كان الغلاف فاتحاً أم غامقاً لتحديد تباين النصوص
-                                    val isDark = pal.getDarkVibrantColor(0) != 0
-                                    if (isDark) {
-                                        // للأغلفة الغامقة (مثل كارت Cataclysm): نختار نصوصاً فاتحة ومبهجة
-                                        titleColor = pal.getLightVibrantColor(0xFFFFFFFF.toInt()).let { Color(it) }
-                                        artistColor = pal.getLightMutedColor(0xFFB0BEC5.toInt()).let { Color(it) }
-                                    } else {
-                                        // للأغلفة الفاتحة (مثل كارت telepatía): نختار نصوصاً داكنة أنيقة مطابقة للصورة
-                                        titleColor = pal.getDarkVibrantColor(0xFF1A237E.toInt()).let { Color(it) }
-                                        artistColor = pal.getDarkMutedColor(0xFF4A148C.toInt()).let { Color(it) }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            )
-        }
-
-        // زر التشغيل السريع في منتصف الكارت شفاف ونظيف وبدون تكتلات بصريّة مزعجة
-        Icon(
-            imageVector = Icons.Rounded.PlayArrow,
-            contentDescription = null,
-            tint = Color.White.copy(alpha = 0.8f),
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(32.dp)
-        )
-
-        // حاوية النصوص وموضعة على اليسار (CenterStart) لتطابق الصورة المرجعية 1000234443.jpg تماماً
+        
+        // الجانب الأيسر: يحتوي على النصوص ويأخذ المساحة المتبقية ديناميكياً
         Column(
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = 20.dp, end = 60.dp) // مسافة أمان مريحة للعين تمنع تداخل النص مع زر التشغيل الوسطي
+                .weight(1f)
+                .padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp)
         ) {
             Text(
                 text = track.title,
-                maxLines = 1,
+                maxLines = 2, // يتيح نزول الاسم لسطر ثانٍ عند الحاجة مثل كارت Cataclysm
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     color = titleColor,
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
-                )
+                ),
+                modifier = Modifier.padding(bottom = 2.dp)
             )
 
             Text(
@@ -125,6 +85,72 @@ fun HomeSongCard(
                     fontWeight = FontWeight.Medium
                 )
             )
+        }
+
+        // الجانب الأيمن: صورة الغلاف المربعة تماماً بشكلها الطبيعي وعليها زر التحكم
+        Box(
+            modifier = Modifier
+                .size(115.dp) // نفس ارتفاع الكارت ليكون مربعاً كاملاً ملتصقاً بالحافة اليمنى
+                .clip(RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp))
+        ) {
+            if (track.albumArtUri != null) {
+                AsyncImage(
+                    model = track.albumArtUri,
+                    contentDescription = track.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    onState = { state ->
+                        if (state is AsyncImagePainter.State.Success) {
+                            val bitmap = (state.result.drawable as? BitmapDrawable)?.bitmap
+                            bitmap?.let { bmp ->
+                                Palette.from(bmp).generate { palette ->
+                                    palette?.let { pal ->
+                                        // 1. سحب اللون المهيمن ليكون خلفية القسم الأيسر والكارت كله
+                                        val extractedBg = pal.getDominantColor(Color(0xFF151515).toArgb())
+                                        val resolvedBg = Color(extractedBg)
+                                        backgroundColor = resolvedBg
+
+                                        // 2. تحليل درجة السطوع (Luminance) لضمان تباين وتلوين النصوص بشكل مثالي
+                                        if (resolvedBg.luminance() < 0.45f) {
+                                            // إذا كانت الخلفية داكنة (مثل كارت Cataclysm): نصوص فاتحة ومبهجة
+                                            titleColor = Color(pal.getLightVibrantColor(Color.White.toArgb()))
+                                            artistColor = Color(pal.getLightMutedColor(Color(0xFFB0BEC5).toArgb()))
+                                        } else {
+                                            // إذا كانت الخلفية فاتحة (مثل كارت telepatía): نصوص غامقة وأنيقة
+                                            titleColor = Color(pal.getDarkVibrantColor(Color(0xFF1A237E).toArgb()))
+                                            artistColor = Color(pal.getDarkMutedColor(Color(0xFF4A148C).toArgb()))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                )
+            }
+
+            // زر التشغيل الشفاف الموضوع في منتصف الغلاف الأيمن تماماً
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(34.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(Color.White.copy(alpha = 0.35f))
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.PlayArrow,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(22.dp)
+                )
+            }
         }
     }
 }
