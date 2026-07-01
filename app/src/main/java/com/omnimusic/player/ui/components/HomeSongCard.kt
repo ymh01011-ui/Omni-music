@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
+import coil.request.ImageRequest
 import com.omnimusic.player.data.model.Track
 
 @Composable
@@ -43,21 +45,32 @@ fun HomeSongCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // الألوان الافتراضية للكارت قبل سحب ألوان الغلاف (تتماشى مع التصميم الداكن)
-    var backgroundColor by remember(track.id) { mutableStateOf(Color(0xFF151515)) }
+    val context = LocalContext.current
+    
+    // الألوان الافتراضية للكارت قبل سحب ألوان الغلاف
+    var backgroundColor by remember(track.id) { mutableStateOf(Color(0xFF1C1C1E)) }
     var titleColor by remember(track.id) { mutableStateOf(Color.White) }
     var artistColor by remember(track.id) { mutableStateOf(Color.White.copy(alpha = 0.65f)) }
 
+    // إعداد طلب الصورة لتعطيل Hardware Bitmaps لكي تتمكن مكتبة Palette من قراءة البيانات
+    val imageRequest = remember(track.albumArtUri) {
+        ImageRequest.Builder(context)
+            .data(track.albumArtUri)
+            .allowHardware(false) // هامة جداً لنجاح سحب الألوان
+            .crossfade(true)
+            .build()
+    }
+
     Row(
         modifier = modifier
-            .size(width = 245.dp, height = 115.dp) // ضبط الأبعاد والارتفاع بدقة ليكون متناسقاً تماماً مع كروت الـ Albums بالأسفل
+            .size(width = 245.dp, height = 115.dp) // نفس حجم وأبعاد الصورة المرجعية بالظبط
             .clip(RoundedCornerShape(20.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         
-        // الجانب الأيسر: يحتوي على النصوص ويأخذ المساحة المتبقية ديناميكياً
+        // الجانب الأيسر: مساحة النصوص الملونة ديناميكياً
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -65,7 +78,7 @@ fun HomeSongCard(
         ) {
             Text(
                 text = track.title,
-                maxLines = 2, // يتيح نزول الاسم لسطر ثانٍ عند الحاجة مثل كارت Cataclysm
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     color = titleColor,
@@ -87,15 +100,15 @@ fun HomeSongCard(
             )
         }
 
-        // الجانب الأيمن: صورة الغلاف المربعة تماماً بشكلها الطبيعي وعليها زر التحكم
+        // الجانب الأيمن: صورة الغلاف المربعة تماماً وعليها زر التشغيل
         Box(
             modifier = Modifier
-                .size(115.dp) // نفس ارتفاع الكارت ليكون مربعاً كاملاً ملتصقاً بالحافة اليمنى
+                .size(115.dp)
                 .clip(RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp))
         ) {
             if (track.albumArtUri != null) {
                 AsyncImage(
-                    model = track.albumArtUri,
+                    model = imageRequest, // استخدام الـ Request المخصص هنا
                     contentDescription = track.title,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
@@ -105,20 +118,24 @@ fun HomeSongCard(
                             bitmap?.let { bmp ->
                                 Palette.from(bmp).generate { palette ->
                                     palette?.let { pal ->
-                                        // 1. سحب اللون المهيمن ليكون خلفية القسم الأيسر والكارت كله
-                                        val extractedBg = pal.getDominantColor(Color(0xFF151515).toArgb())
+                                        // سحب اللون الأساسي المسيطر على الصورة
+                                        val extractedBg = pal.getDominantColor(
+                                            pal.getMutedColor(
+                                                pal.getVibrantColor(Color(0xFF1C1C1E).toArgb())
+                                            )
+                                        )
                                         val resolvedBg = Color(extractedBg)
                                         backgroundColor = resolvedBg
 
-                                        // 2. تحليل درجة السطوع (Luminance) لضمان تباين وتلوين النصوص بشكل مثالي
-                                        if (resolvedBg.luminance() < 0.45f) {
-                                            // إذا كانت الخلفية داكنة (مثل كارت Cataclysm): نصوص فاتحة ومبهجة
-                                            titleColor = Color(pal.getLightVibrantColor(Color.White.toArgb()))
-                                            artistColor = Color(pal.getLightMutedColor(Color(0xFFB0BEC5).toArgb()))
+                                        // حساب التباين لضبط ألوان النصوص بناءً على سطوع الخلفية المستخرجة
+                                        if (resolvedBg.luminance() > 0.45f) {
+                                            // إذا كانت الخلفية فاتحة (مثل غلاف Olivia Rodrigo السماوي أو غلاف telepatía الوردي)
+                                            titleColor = Color(pal.getDarkVibrantColor(Color(0xFF121212).toArgb()))
+                                            artistColor = Color(pal.getDarkMutedColor(Color(0xFF333333).toArgb()))
                                         } else {
-                                            // إذا كانت الخلفية فاتحة (مثل كارت telepatía): نصوص غامقة وأنيقة
-                                            titleColor = Color(pal.getDarkVibrantColor(Color(0xFF1A237E).toArgb()))
-                                            artistColor = Color(pal.getDarkMutedColor(Color(0xFF4A148C).toArgb()))
+                                            // إذا كانت الخلفية غامقة (مثل كارت Cataclysm المظلم)
+                                            titleColor = Color(pal.getLightVibrantColor(Color.White.toArgb()))
+                                            artistColor = Color(pal.getLightMutedColor(Color(0xFFCCCCCC).toArgb()))
                                         }
                                     }
                                 }
@@ -134,7 +151,7 @@ fun HomeSongCard(
                 )
             }
 
-            // زر التشغيل الشفاف الموضوع في منتصف الغلاف الأيمن تماماً
+            // زر التشغيل الدائري الشفاف في منتصف الغلاف تماماً
             Box(
                 modifier = Modifier
                     .align(Alignment.Center)
