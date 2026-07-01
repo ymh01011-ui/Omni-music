@@ -52,15 +52,17 @@ fun HomeScreen(
             
             // 1. شريط البحث - تم إضافة statusBarsPadding ليتمركز أسفل شريط النظام العلوي مباشرة وبثبات تام،
             // وتم تصفير الـ padding الجانبي (0.dp) ليأخذ عرض الشاشة بالكامل ويمتد من الحافة للحافة كالمرجع.
+            // التعديل الصحيح والمطابق للـ Compose API:
             item {
                 SearchBar(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .statusBarsPadding() // يضمن التموضع الذكي أسفل أيقونات الساعة والبطارية دون تداخل وبأعلى نقطة
-                        .padding(horizontal = 0.dp, top = 4.dp), 
+                        .statusBarsPadding() 
+                        .padding(start = 16.dp, end = 16.dp, top = 4.dp), // حددنا كل اتجاه لوحده عشان نمنع إيرور الكومبيلر ورجعنا الـ 16.dp للمحاذاة الصح
                     onClick = { /* TODO */ }
                 )
             }
+
 
             // مسافة ملاحمة مكبوسة ومثالية لتلتصق الدوائر بالبحث
             item {
