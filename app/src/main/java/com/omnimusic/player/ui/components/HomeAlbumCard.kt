@@ -38,7 +38,7 @@ fun HomeAlbumCard(
 ) {
     Column(
         modifier = modifier
-            .width(140.dp)
+            .width(150.dp)
             .clickable(onClick = onClick)
     ) {
         Box(
@@ -55,7 +55,7 @@ fun HomeAlbumCard(
             } else {
                 Box(
                     modifier = Modifier
-                        .size(140.dp)
+                        .size(150.dp)
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             }
