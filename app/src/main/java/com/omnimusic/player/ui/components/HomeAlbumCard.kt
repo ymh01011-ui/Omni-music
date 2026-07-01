@@ -43,7 +43,7 @@ fun HomeAlbumCard(
     ) {
         Box(
             modifier = Modifier
-                .size(140.dp)
+                .size(150.dp)
                 .clip(RoundedCornerShape(8.dp)),
         ) {
             if (album.albumArtUri != null) {
