@@ -110,6 +110,9 @@ dependencies {
     // Image loading
     implementation(libs.coil.compose)
 
+    // Color extraction (Palette API for dynamic UI coloring)
+    implementation("androidx.palette:palette-ktx:1.0.0")
+
     // Dependency injection
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
