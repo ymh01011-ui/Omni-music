@@ -63,7 +63,7 @@ fun HomeSongCard(
 
     Row(
         modifier = modifier
-            .size(width = 245.dp, height = 130.dp) // الأبعاد المتطابقة تماماً مع التصميم المرجعي
+            .size(width = 250.dp, height = 125.dp) // الأبعاد المتطابقة تماماً مع التصميم المرجعي
             .clip(RoundedCornerShape(15.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick),
