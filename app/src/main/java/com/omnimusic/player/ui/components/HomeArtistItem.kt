@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -49,6 +50,8 @@ fun HomeArtistItem(
         modifier = modifier
             .width(150.dp)
             .clickable(onClick = onClick),
+        // 1. إضافة المحاذاة الأفقية في المنتصف للـ Column
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
@@ -82,7 +85,9 @@ fun HomeArtistItem(
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 6.dp),
+            // 2. محاذاة النص نفسه ليكون في المنتصف
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp), // زودت الـ padding شوية لـ 8 عشان يبقى متناسق أكتر مع الدائرة
         )
     }
 }
