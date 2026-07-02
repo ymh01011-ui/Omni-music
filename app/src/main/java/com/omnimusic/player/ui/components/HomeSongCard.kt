@@ -63,7 +63,7 @@ fun HomeSongCard(
 
     Row(
         modifier = modifier
-            .size(width = 250.dp, height = 125.dp) // الأبعاد المتطابقة تماماً مع التصميم المرجعي
+            .size(width = 245.dp, height = 125.dp) // الأبعاد المتطابقة تماماً مع التصميم المرجعي
             .clip(RoundedCornerShape(15.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick),
@@ -103,7 +103,7 @@ fun HomeSongCard(
         // الجانب الأيمن: غلاف الأغنية المدمج بسلاسة بدون فواصل
         Box(
             modifier = Modifier
-                .size(115.dp)
+                .size(125.dp)
                 .clip(RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp))
         ) {
             if (track.albumArtUri != null) {
