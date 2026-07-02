@@ -52,17 +52,15 @@ fun HomeScreen(
             
             // 1. شريط البحث - تم إضافة statusBarsPadding ليتمركز أسفل شريط النظام العلوي مباشرة وبثبات تام،
             // وتم تصفير الـ padding الجانبي (0.dp) ليأخذ عرض الشاشة بالكامل ويمتد من الحافة للحافة كالمرجع.
-            // التعديل الصحيح والمطابق للـ Compose API:
             item {
                 SearchBar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .statusBarsPadding() 
-                        .padding(start = 16.dp, end = 16.dp, top = 4.dp), // حددنا كل اتجاه لوحده عشان نمنع إيرور الكومبيلر ورجعنا الـ 16.dp للمحاذاة الصح
+                        .padding(start = 16.dp, end = 16.dp, top = 4.dp),
                     onClick = { /* TODO */ }
                 )
             }
-
 
             // مسافة ملاحمة مكبوسة ومثالية لتلتصق الدوائر بالبحث
             item {
@@ -141,7 +139,13 @@ private fun RecentAlbumsSection(data: HomeData) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(data.recentlyPlayedAlbums, key = { it.name }) { album ->
-                HomeAlbumCard(album = album, onClick = { /* TODO */ }, onPlayClick = { /* TODO */ })
+                // تم تعديل الاستدعاء هنا لإضافة الـ onMenuClick الناقص لحل مشكلة الـ Compiler إجبارياً
+                HomeAlbumCard(
+                    album = album,
+                    onClick = { /* TODO */ },
+                    onPlayClick = { /* TODO */ },
+                    onMenuClick = { /* TODO: إظهار القائمة أو الـ BottomSheet هنا لاحقاً */ }
+                )
             }
         }
     }
