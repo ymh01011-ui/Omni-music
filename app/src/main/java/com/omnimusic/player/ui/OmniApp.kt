@@ -112,7 +112,7 @@ fun OmniApp() {
                 }
             }
         ) { innerPadding ->
-            // التعديل الجوهري: نأخذ الحشو السفلي فقط لحماية أزرار التنقل والـ MiniPlayer، ونلغي الحشو العلوي تماماً
+            // نأخذ الحشو السفلي فقط لحماية أزرار التنقل و MiniPlayer، ونلغي الحشو العلوي
             AnimatedNavHost(
                 navController = navController,
                 startDestination = OmniDestination.Home.route,
