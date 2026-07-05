@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -28,6 +27,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -45,10 +45,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.omnimusic.player.ui.albums.AlbumsScreen
 import com.omnimusic.player.ui.artists.ArtistsScreen
 import com.omnimusic.player.ui.components.MiniPlayer
@@ -84,7 +84,7 @@ val LocalPlaybackViewModel = compositionLocalOf<PlaybackViewModel> {
 
 @Composable
 fun OmniApp() {
-    val navController = rememberAnimatedNavController()
+    val navController = rememberNavController()
     val playbackViewModel: PlaybackViewModel = hiltViewModel()
     val playbackState by playbackViewModel.playbackState.collectAsState()
 
@@ -112,18 +112,12 @@ fun OmniApp() {
                 }
             }
         ) { innerPadding ->
-            // نأخذ الحشو السفلي فقط لحماية أزرار التنقل و MiniPlayer، ونلغي الحشو العلوي
-            AnimatedNavHost(
+            NavHost(
                 navController = navController,
                 startDestination = OmniDestination.Home.route,
                 modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
-                enterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
-                exitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
-                popEnterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
-                popExitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
             ) {
                 composable(OmniDestination.Home.route) {
-                    // تمرير Modifier.fillMaxSize() لضمان مطابقة الشاشة
                     HomeScreen(modifier = Modifier.fillMaxSize())
                 }
                 composable(OmniDestination.Albums.route) { AlbumsScreen() }
@@ -201,10 +195,9 @@ private fun RowScope.OmniNavItem(
                 onClick = onClick,
                 role = Role.Tab,
                 interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(
+                indication = ripple(
                     bounded = false,
                     radius = 28.dp,
-                    color = OmniGreen,
                 ),
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
