@@ -25,6 +25,12 @@ jobs:
         with:
           gradle-version: '8.13'
 
+      - name: Check resolved Compose Material3 version
+        run: |
+          echo "=== Checking Compose Material3 version ==="
+          ./gradlew dependencyInsight --dependency androidx.compose.material3:material3 2>&1 | grep -E "androidx.compose.material3:material3" | head -10
+        continue-on-error: true
+
       - name: Generate Keystore
         run: |
           keytool -genkey -v \
