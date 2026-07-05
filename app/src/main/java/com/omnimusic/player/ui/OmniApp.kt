@@ -8,18 +8,37 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -30,13 +49,26 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -55,27 +87,21 @@ import com.omnimusic.player.ui.navigation.OmniDestination
 import com.omnimusic.player.ui.playlists.PlaylistsScreen
 import com.omnimusic.player.ui.songs.SongsScreen
 import com.omnimusic.player.ui.theme.OmniGreen
+import com.omnimusic.player.ui.theme.OmniSurface
 import com.omnimusic.player.ui.theme.OmniSurfaceElevated
+import com.omnimusic.player.ui.theme.OmniSurfaceElevatedHigh
+import com.omnimusic.player.ui.theme.OmniTextPrimary
+import com.omnimusic.player.ui.theme.OmniTextSecondary
+import kotlin.math.roundToInt
 
-/**
- * Animation timing per design spec section 2: short (200-300ms) fade-through
- * transitions for all tab switches and navigation, no slide/overshoot.
- */
 private const val TRANSITION_DURATION_MS = 250
-
-/**
- * Metro/RetroMusic-style timing + tints for the bottom navigation bar:
- * selected icon lifts up, label fades/expands in below it, and the pill
- * indicator behind the icon appears at a low accent-color opacity.
- */
 private const val NAV_ITEM_ANIM_MS = 250
 private const val NAV_INDICATOR_ALPHA = 0.12f
 private val NAV_ICON_LIFT = (-8).dp
 
-/**
- * App-wide [PlaybackViewModel] instance, shared by every screen that needs
- * to start or observe playback (Mini Player, Songs, Albums, Home, etc.).
- */
+// الارتفاع الإجمالي التقريبي لشريط البحث العائم مع الـ Chips
+val FLOATING_SEARCH_BAR_PADDING = 125.dp
+
 val LocalPlaybackViewModel = compositionLocalOf<PlaybackViewModel> {
     error("LocalPlaybackViewModel not provided - must be set in OmniApp")
 }
@@ -86,8 +112,33 @@ fun OmniApp() {
     val playbackViewModel: PlaybackViewModel = hiltViewModel()
     val playbackState by playbackViewModel.playbackState.collectAsState()
 
+    // حالات البحث المركزية
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var isSearchActive by rememberSaveable { mutableStateOf(false) }
+    var selectedFilter by rememberSaveable { mutableStateOf("All") }
+
+    // التحكم في إخفاء وظهور الشريط العائم أثناء السحب
+    val density = LocalDensity.current
+    val maxOverlapPx = remember { with(density) { FLOATING_SEARCH_BAR_PADDING.toPx() } }
+    var topBarOffsetHeightPx by rememberSaveable { mutableFloatStateOf(0f) }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                // إذا كان البحث نشطاً والكتابة تعمل، نفضل عدم إخفاء الشريط لتسهيل التجربة
+                if (isSearchActive) return Offset.Zero
+
+                val delta = available.y
+                val newOffset = topBarOffsetHeightPx + delta
+                topBarOffsetHeightPx = newOffset.coerceIn(-maxOverlapPx, 0f)
+                return Offset.Zero
+            }
+        }
+    }
+
     CompositionLocalProvider(LocalPlaybackViewModel provides playbackViewModel) {
         Scaffold(
+            modifier = Modifier.nestedScroll(nestedScrollConnection),
             bottomBar = {
                 Column {
                     MiniPlayer(
@@ -101,7 +152,7 @@ fun OmniApp() {
                                 } else 0f,
                             )
                         },
-                        onClick = { /* TODO: navigate to Now Playing once that screen exists */ },
+                        onClick = { /* TODO */ },
                         onPlayPauseClick = playbackViewModel::togglePlayPause,
                         onNextClick = playbackViewModel::skipToNext,
                         onPreviousClick = playbackViewModel::skipToPrevious,
@@ -110,20 +161,154 @@ fun OmniApp() {
                 }
             }
         ) { innerPadding ->
-            NavHost(
-                navController = navController,
-                startDestination = OmniDestination.Home.route,
-                modifier = Modifier.padding(innerPadding),
-                enterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
-                exitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
-                popEnterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
-                popExitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
-            ) {
-                composable(OmniDestination.Home.route) { HomeScreen() }
-                composable(OmniDestination.Albums.route) { AlbumsScreen() }
-                composable(OmniDestination.Songs.route) { SongsScreen() }
-                composable(OmniDestination.Playlists.route) { PlaylistsScreen() }
-                composable(OmniDestination.Artists.route) { ArtistsScreen() }
+            Box(modifier = Modifier.fillMaxSize()) {
+                
+                // محتوى الشاشات داخل الـ NavHost
+                NavHost(
+                    navController = navController,
+                    startDestination = OmniDestination.Home.route,
+                    modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
+                    enterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
+                    exitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
+                    popEnterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
+                    popExitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
+                ) {
+                    composable(OmniDestination.Home.route) { HomeScreen() }
+                    composable(OmniDestination.Albums.route) { AlbumsScreen() }
+                    composable(OmniDestination.Songs.route) { SongsScreen() }
+                    composable(OmniDestination.Playlists.route) { PlaylistsScreen() }
+                    composable(OmniDestination.Artists.route) { ArtistsScreen() }
+                }
+
+                // شريط البحث العائم العلوي المتجاوب مع حركة السحب
+                GlobalFloatingSearchBar(
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    isActive = isSearchActive,
+                    onActiveChange = { isSearchActive = it },
+                    selectedFilter = selectedFilter,
+                    onFilterChange = { selectedFilter = it },
+                    modifier = Modifier
+                        .offset { IntOffset(x = 0, y = topBarOffsetHeightPx.roundToInt()) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GlobalFloatingSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    isActive: Boolean,
+    onActiveChange: (Boolean) -> Unit,
+    selectedFilter: String,
+    onFilterChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(OmniSurface.copy(alpha = 0.95f)) // تأثير زجاجي معتم قليلاً ليطفو فوق القوائم
+            .statusBarsPadding()
+            .padding(bottom = 8.dp)
+    ) {
+        // صف البحث (البيل بار أو حقل الكتابة النشط)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(OmniSurfaceElevated)
+                .padding(horizontal = 12.dp, vertical = if (isActive) 6.dp else 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (isActive) {
+                IconButton(
+                    onClick = {
+                        onActiveChange(false)
+                        onQueryChange("")
+                        keyboardController?.hide()
+                    },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = OmniTextPrimary
+                    )
+                }
+
+                BasicTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp, end = 8.dp),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = OmniTextPrimary),
+                    cursorBrush = SolidColor(OmniGreen),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
+                    decorationBox = { innerTextField ->
+                        if (query.isEmpty()) {
+                            Text(
+                                text = "Search your music",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = OmniTextSecondary
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+            } else {
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { onActiveChange(true) },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Menu,
+                        contentDescription = "Menu",
+                        tint = OmniTextSecondary,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                    Text(
+                        text = "Search your music",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OmniTextSecondary,
+                        modifier = Modifier.padding(start = 12.dp),
+                    )
+                }
+            }
+        }
+
+        // صف الـ Filter Chips الذكي كما في المرجع المعروض
+        val filters = listOf("All", "Songs", "Albums", "Artists")
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(filters) { filter ->
+                val isSelected = filter == selectedFilter
+                AssistChip(
+                    onClick = { onFilterChange(filter) },
+                    label = {
+                        Text(
+                            text = filter,
+                            color = if (isSelected) OmniSurface else OmniTextPrimary
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = if (isSelected) OmniGreen else Color.Transparent
+                    ),
+                    border = if (isSelected) null else BorderStroke(1.dp, OmniSurfaceElevatedHigh),
+                    shape = RoundedCornerShape(8.dp)
+                )
             }
         }
     }
@@ -134,9 +319,7 @@ private fun OmniBottomNavBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    NavigationBar(
-        containerColor = OmniSurfaceElevated // 🎨 تم تغيير لون خلفية البار ليتطابق مع الميني بلاير تماماً
-    ) {
+    NavigationBar(containerColor = OmniSurfaceElevated) {
         OmniDestination.bottomNavItems.forEach { destination ->
             val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
 
@@ -158,11 +341,6 @@ private fun OmniBottomNavBar(navController: NavHostController) {
     }
 }
 
-/**
- * Custom nav bar item replicating Metro/RetroMusic's motion: the icon lifts
- * up and the label fades + expands in underneath it when selected. Unselected
- * items show the icon only, with no reserved space for a label.
- */
 @Composable
 private fun RowScope.OmniNavItem(
     selected: Boolean,
@@ -181,7 +359,7 @@ private fun RowScope.OmniNavItem(
         label = "navIndicatorColor",
     )
     val contentColor by animateColorAsState(
-        targetValue = if (selected) OmniGreen else NavigationBarItemDefaults.colors().unselectedIconColor,
+        targetValue = if (selected) OmniGreen else OmniTextSecondary,
         animationSpec = tween(NAV_ITEM_ANIM_MS),
         label = "navContentColor",
     )
@@ -194,7 +372,7 @@ private fun RowScope.OmniNavItem(
                 onClick = onClick,
                 role = Role.Tab,
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null // 🚫 تم تعيين القيمة إلى null لإزالة الهايلايت الأبيض عند الضغط
+                indication = null
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
