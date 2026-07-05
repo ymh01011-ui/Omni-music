@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omnimusic.player.data.repository.HomeData
-import com.omnimusic.player.ui.FLOATING_SEARCH_BAR_PADDING
+import com.omnimusic.player.ui.GLOBAL_BAR_HEIGHT
 import com.omnimusic.player.ui.components.HomeAlbumCard
 import com.omnimusic.player.ui.components.HomeArtistItem
 import com.omnimusic.player.ui.components.HomeSongCard
@@ -46,11 +46,11 @@ fun HomeScreen(
     } else {
         LazyColumn(
             modifier = modifier.fillMaxSize(),
-            // 🚀 إضافة FLOATING_SEARCH_BAR_PADDING كحشوة رأسية لحماية المحتوى من الاختفاء تحت شريط البحث العائم
-            contentPadding = PaddingValues(top = FLOATING_SEARCH_BAR_PADDING + 8.dp, bottom = 16.dp)
+            // حشوة علوية ذكية تضمن عدم تغطية العناصر وتجعلها تنسحب خلف البار بفخامة
+            contentPadding = PaddingValues(top = GLOBAL_BAR_HEIGHT + 16.dp, bottom = 16.dp)
         ) {
             
-            // 1. الدوائر الملونة مسنترة وملمومة مباشرة في الأعلى
+            // 1. الدوائر الملونة
             item {
                 QuickAccessRow(
                     modifier = Modifier
@@ -63,30 +63,24 @@ fun HomeScreen(
                 )
             }
 
-            // تلاحم مباشر وقريب لمنع هبوط كتلة الأقسام لأسفل الشاشة
-            item {
-                Spacer(modifier = Modifier.height(14.dp))
-            }
+            item { Spacer(modifier = Modifier.height(14.dp)) }
 
-            // 2. قسم Recently added
+            // 2. الأقسام الموسيقية المتتالية تالياً
             item {
                 RecentlyAddedSection(data = uiState.data)
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 3. قسم الألبومات المشغلة مؤخراً
             item {
                 RecentAlbumsSection(data = uiState.data)
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 4. قسم الفنانين
             item {
                 RecentArtistsSection(data = uiState.data, viewModel = viewModel)
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 5. قسم المفضلة
             item {
                 FavoritesSection(data = uiState.data)
             }
