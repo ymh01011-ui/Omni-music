@@ -8,7 +8,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.ripple.ripple
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -28,8 +28,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple.LocalRippleConfiguration
-import androidx.compose.material3.ripple.RippleConfiguration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -142,30 +140,24 @@ private fun OmniBottomNavBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Metro/RetroMusic tints the ripple to the accent color instead of the
-    // default translucent grey ripple.
-    val rippleConfiguration = RippleConfiguration(color = OmniGreen, rippleAlpha = null)
+    NavigationBar {
+        OmniDestination.bottomNavItems.forEach { destination ->
+            val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
 
-    CompositionLocalProvider(LocalRippleConfiguration provides rippleConfiguration) {
-        NavigationBar {
-            OmniDestination.bottomNavItems.forEach { destination ->
-                val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
-
-                OmniNavItem(
-                    selected = selected,
-                    onClick = {
-                        navController.navigate(destination.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
+            OmniNavItem(
+                selected = selected,
+                onClick = {
+                    navController.navigate(destination.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
                         }
-                    },
-                    icon = destination.icon,
-                    label = destination.label,
-                )
-            }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = destination.icon,
+                label = destination.label,
+            )
         }
     }
 }
@@ -174,6 +166,8 @@ private fun OmniBottomNavBar(navController: NavHostController) {
  * Custom nav bar item replicating Metro/RetroMusic's motion: the icon lifts
  * up and the label fades + expands in underneath it when selected. Unselected
  * items show the icon only, with no reserved space for a label.
+ *
+ * Ripple color is set to OmniGreen to match the theme.
  */
 @Composable
 private fun RowScope.OmniNavItem(
@@ -207,7 +201,11 @@ private fun RowScope.OmniNavItem(
                 onClick = onClick,
                 role = Role.Tab,
                 interactionSource = remember { MutableInteractionSource() },
-                indication = LocalIndication.current,
+                indication = ripple(
+                    bounded = false,
+                    radius = 28.dp,
+                    color = OmniGreen,
+                ),
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
