@@ -45,10 +45,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.omnimusic.player.ui.albums.AlbumsScreen
 import com.omnimusic.player.ui.artists.ArtistsScreen
 import com.omnimusic.player.ui.components.MiniPlayer
@@ -84,7 +84,7 @@ val LocalPlaybackViewModel = compositionLocalOf<PlaybackViewModel> {
 
 @Composable
 fun OmniApp() {
-    val navController = rememberNavController()
+    val navController = rememberAnimatedNavController()
     val playbackViewModel: PlaybackViewModel = hiltViewModel()
     val playbackState by playbackViewModel.playbackState.collectAsState()
 
@@ -112,10 +112,10 @@ fun OmniApp() {
                 }
             }
         ) { innerPadding ->
-            NavHost(
+            // التعديل الجوهري: نأخذ الحشو السفلي فقط لحماية أزرار التنقل والـ MiniPlayer، ونلغي الحشو العلوي تماماً
+            AnimatedNavHost(
                 navController = navController,
                 startDestination = OmniDestination.Home.route,
-                // التعديل الجوهري: نأخذ الحشو السفلي فقط لحماية أزرار التنقل والـ MiniPlayer، ونلغي الحشو العلوي تماماً لتتحرر الشاشة وتصعد لأعلى
                 modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
                 enterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
                 exitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
