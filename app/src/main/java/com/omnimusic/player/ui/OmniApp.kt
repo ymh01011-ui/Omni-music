@@ -46,6 +46,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
@@ -57,6 +58,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -86,8 +89,8 @@ import com.omnimusic.player.ui.home.HomeScreen
 import com.omnimusic.player.ui.navigation.OmniDestination
 import com.omnimusic.player.ui.playlists.PlaylistsScreen
 import com.omnimusic.player.ui.songs.SongsScreen
+import com.omnimusic.player.ui.theme.OmniBlack
 import com.omnimusic.player.ui.theme.OmniGreen
-import com.omnimusic.player.ui.theme.OmniSurface
 import com.omnimusic.player.ui.theme.OmniSurfaceElevated
 import com.omnimusic.player.ui.theme.OmniSurfaceElevatedHigh
 import com.omnimusic.player.ui.theme.OmniTextPrimary
@@ -99,8 +102,8 @@ private const val NAV_ITEM_ANIM_MS = 250
 private const val NAV_INDICATOR_ALPHA = 0.12f
 private val NAV_ICON_LIFT = (-8).dp
 
-// الارتفاع الإجمالي التقريبي لشريط البحث العائم مع الـ Chips
-val FLOATING_SEARCH_BAR_PADDING = 125.dp
+// الارتفاع الفعلي الثابت لشريط البحث العائم النظيف في الشاشات العادية
+val GLOBAL_BAR_HEIGHT = 80.dp
 
 val LocalPlaybackViewModel = compositionLocalOf<PlaybackViewModel> {
     error("LocalPlaybackViewModel not provided - must be set in OmniApp")
@@ -112,22 +115,20 @@ fun OmniApp() {
     val playbackViewModel: PlaybackViewModel = hiltViewModel()
     val playbackState by playbackViewModel.playbackState.collectAsState()
 
-    // حالات البحث المركزية
+    // حالات التحكم بالبحث الكامل والفعال
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
     var selectedFilter by rememberSaveable { mutableStateOf("All") }
 
-    // التحكم في إخفاء وظهور الشريط العائم أثناء السحب
+    // التحكم في حركة اختفاء شريط البحث عند السحب لأعلى وظهوره عند السحب لأسفل
     val density = LocalDensity.current
-    val maxOverlapPx = remember { with(density) { FLOATING_SEARCH_BAR_PADDING.toPx() } }
+    val maxOverlapPx = remember { with(density) { GLOBAL_BAR_HEIGHT.toPx() } }
     var topBarOffsetHeightPx by rememberSaveable { mutableFloatStateOf(0f) }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                // إذا كان البحث نشطاً والكتابة تعمل، نفضل عدم إخفاء الشريط لتسهيل التجربة
-                if (isSearchActive) return Offset.Zero
-
+                if (isSearchActive) return Offset.Zero // تعطيل الاختفاء أثناء الكتابة في صفحة البحث الكاملة
                 val delta = available.y
                 val newOffset = topBarOffsetHeightPx + delta
                 topBarOffsetHeightPx = newOffset.coerceIn(-maxOverlapPx, 0f)
@@ -163,7 +164,7 @@ fun OmniApp() {
         ) { innerPadding ->
             Box(modifier = Modifier.fillMaxSize()) {
                 
-                // محتوى الشاشات داخل الـ NavHost
+                // محتوى التطبيق الأساسي المستقر
                 NavHost(
                     navController = navController,
                     startDestination = OmniDestination.Home.route,
@@ -180,135 +181,157 @@ fun OmniApp() {
                     composable(OmniDestination.Artists.route) { ArtistsScreen() }
                 }
 
-                // شريط البحث العائم العلوي المتجاوب مع حركة السحب
-                GlobalFloatingSearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    isActive = isSearchActive,
-                    onActiveChange = { isSearchActive = it },
-                    selectedFilter = selectedFilter,
-                    onFilterChange = { selectedFilter = it },
-                    modifier = Modifier
-                        .offset { IntOffset(x = 0, y = topBarOffsetHeightPx.roundToInt()) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun GlobalFloatingSearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    isActive: Boolean,
-    onActiveChange: (Boolean) -> Unit,
-    selectedFilter: String,
-    onFilterChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(OmniSurface.copy(alpha = 0.95f)) // تأثير زجاجي معتم قليلاً ليطفو فوق القوائم
-            .statusBarsPadding()
-            .padding(bottom = 8.dp)
-    ) {
-        // صف البحث (البيل بار أو حقل الكتابة النشط)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .clip(RoundedCornerShape(28.dp))
-                .background(OmniSurfaceElevated)
-                .padding(horizontal = 12.dp, vertical = if (isActive) 6.dp else 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (isActive) {
-                IconButton(
-                    onClick = {
-                        onActiveChange(false)
-                        onQueryChange("")
-                        keyboardController?.hide()
-                    },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = OmniTextPrimary
-                    )
-                }
-
-                BasicTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 12.dp, end = 8.dp),
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = OmniTextPrimary),
-                    cursorBrush = SolidColor(OmniGreen),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
-                    decorationBox = { innerTextField ->
-                        if (query.isEmpty()) {
-                            Text(
-                                text = "Search your music",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = OmniTextSecondary
-                            )
-                        }
-                        innerTextField()
-                    }
-                )
-            } else {
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { onActiveChange(true) },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Menu,
-                        contentDescription = "Menu",
-                        tint = OmniTextSecondary,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                    Text(
-                        text = "Search your music",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OmniTextSecondary,
-                        modifier = Modifier.padding(start = 12.dp),
-                    )
-                }
-            }
-        }
-
-        // صف الـ Filter Chips الذكي كما في المرجع المعروض
-        val filters = listOf("All", "Songs", "Albums", "Artists")
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            items(filters) { filter ->
-                val isSelected = filter == selectedFilter
-                AssistChip(
-                    onClick = { onFilterChange(filter) },
-                    label = {
-                        Text(
-                            text = filter,
-                            color = if (isSelected) OmniSurface else OmniTextPrimary
+                // 1. شريط البحث العائم والنظيف جداً (يظهر فوق كل الشاشات ويختفي عند السحب)
+                if (!isSearchActive) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .offset { IntOffset(x = 0, y = topBarOffsetHeightPx.roundToInt()) }
+                            .statusBarsPadding()
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(OmniSurfaceElevated)
+                            .clickable { isSearchActive = true } // عند الضغط يتحول لصفحة كاملة
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Menu,
+                            contentDescription = "Menu",
+                            tint = OmniTextSecondary
                         )
-                    },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = if (isSelected) OmniGreen else Color.Transparent
-                    ),
-                    border = if (isSelected) null else BorderStroke(1.dp, OmniSurfaceElevatedHigh),
-                    shape = RoundedCornerShape(8.dp)
-                )
+                        Text(
+                            text = "Search your music",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = OmniTextSecondary,
+                            modifier = Modifier.padding(start = 12.dp),
+                        )
+                    }
+                }
+
+                // 2. صفحة البحث الكاملة (Full-Screen Search View) الفخمة والمستقلة تماماً
+                AnimatedVisibility(
+                    visible = isSearchActive,
+                    enter = fadeIn(tween(200)),
+                    exit = fadeOut(tween(200))
+                ) {
+                    val focusRequester = remember { FocusRequester() }
+                    val keyboardController = LocalSoftwareKeyboardController.current
+
+                    LaunchedEffect(isSearchActive) {
+                        if (isSearchActive) {
+                            focusRequester.requestFocus()
+                            keyboardController?.show()
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(OmniBlack)
+                            .statusBarsPadding()
+                    ) {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            // حقل الكتابة مع سهم العودة
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .clip(RoundedCornerShape(28.dp))
+                                    .background(OmniSurfaceElevated)
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        isSearchActive = false
+                                        searchQuery = ""
+                                        keyboardController?.hide()
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = OmniTextPrimary
+                                    )
+                                }
+
+                                BasicTextField(
+                                    value = searchQuery,
+                                    onValueChange = { searchQuery = it },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(start = 8.dp, end = 8.dp)
+                                        .focusRequester(focusRequester),
+                                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = OmniTextPrimary),
+                                    cursorBrush = SolidColor(OmniGreen),
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                    keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
+                                    decorationBox = { innerTextField ->
+                                        if (searchQuery.isEmpty()) {
+                                            Text(
+                                                text = "Search your music",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = OmniTextSecondary
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                )
+                            }
+
+                            // أزرار الفلترة الأنيقة تظهر هنا فقط داخل صفحة البحث الكاملة
+                            val filters = listOf("All", "Songs", "Albums", "Artists")
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                items(filters) { filter ->
+                                    val isSelected = filter == selectedFilter
+                                    AssistChip(
+                                        onClick = { selectedFilter = filter },
+                                        label = {
+                                            Text(
+                                                text = filter,
+                                                color = if (isSelected) OmniBlack else OmniTextPrimary
+                                            )
+                                        },
+                                        colors = AssistChipDefaults.assistChipColors(
+                                            containerColor = if (isSelected) OmniGreen else Color.Transparent
+                                        ),
+                                        border = if (isSelected) null else BorderStroke(1.dp, OmniSurfaceElevatedHigh),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                }
+                            }
+
+                            // منطقة عرض نتائج البحث الفعالة والمحاذاة بشكل سليم
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (searchQuery.isEmpty()) {
+                                    Text(
+                                        text = "Search for songs, albums, or artists",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = OmniTextSecondary
+                                    )
+                                } else {
+                                    // هنا يتم ربط القائمة الفعلية بالبيانات المفلترة مستقبلاً
+                                    Text(
+                                        text = "Results for \"$searchQuery\" in $selectedFilter",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = OmniGreen
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
