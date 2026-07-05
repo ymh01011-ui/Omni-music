@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.ripple.ripple
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -201,7 +201,7 @@ private fun RowScope.OmniNavItem(
                 onClick = onClick,
                 role = Role.Tab,
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(
+                indication = rememberRipple(
                     bounded = false,
                     radius = 28.dp,
                     color = OmniGreen,
