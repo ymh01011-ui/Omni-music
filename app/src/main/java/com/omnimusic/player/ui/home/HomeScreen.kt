@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omnimusic.player.data.repository.HomeData
-import com.omnimusic.player.ui.GLOBAL_BAR_HEIGHT
+import com.omnimusic.player.ui.rememberOmniTopPadding
 import com.omnimusic.player.ui.components.HomeAlbumCard
 import com.omnimusic.player.ui.components.HomeArtistItem
 import com.omnimusic.player.ui.components.HomeSongCard
@@ -35,6 +35,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val topPadding = rememberOmniTopPadding()
 
     if (uiState.isLoading) {
         Box(
@@ -46,8 +47,8 @@ fun HomeScreen(
     } else {
         LazyColumn(
             modifier = modifier.fillMaxSize(),
-            // حشوة علوية ذكية تضمن عدم تغطية العناصر وتجعلها تنسحب خلف البار بفخامة
-            contentPadding = PaddingValues(top = GLOBAL_BAR_HEIGHT + 16.dp, bottom = 16.dp)
+            // حشوة علوية ديناميكية بتتزامن مع اختفاء شريط البحث
+            contentPadding = PaddingValues(top = topPadding, bottom = 16.dp)
         ) {
             
             // 1. الدوائر الملونة
