@@ -66,11 +66,11 @@ fun ArtistsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            // 🚀 إضافة حشوة علوية بمقدار شريط البحث تمامًا زي باقي الشاشات
+            // 🚀 حشوة علوية خفيفة فقط بمقدار كسر شريط البحث + مسافة تنفس بسيطة (زي الصورة المرجعية)
             else -> Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = GLOBAL_BAR_HEIGHT + 16.dp)
+                    .padding(top = GLOBAL_BAR_HEIGHT + 8.dp)
             ) {
                 ArtistsHeader(
                     sortOption = uiState.sortOption,
