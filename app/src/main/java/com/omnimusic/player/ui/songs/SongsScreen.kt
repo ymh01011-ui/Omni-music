@@ -40,8 +40,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.omnimusic.player.ui.rememberOmniTopPadding
-import com.omnimusic.player.ui.LocalOmniPlaybackViewModel
+import com.omnimusic.player.ui.GLOBAL_BAR_HEIGHT
+import com.omnimusic.player.ui.LocalPlaybackViewModel
 import com.omnimusic.player.ui.components.TrackRow
 import com.omnimusic.player.util.AudioPermission
 
@@ -52,8 +52,8 @@ fun SongsScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    val playbackViewModel = LocalOmniPlaybackViewModel.current
-    val topPadding = rememberOmniTopPadding()
+    val playbackViewModel = LocalPlaybackViewModel.current
+    val topPadding = GLOBAL_BAR_HEIGHT
 
     var hasPermission by rememberSaveable {
         mutableStateOf(
