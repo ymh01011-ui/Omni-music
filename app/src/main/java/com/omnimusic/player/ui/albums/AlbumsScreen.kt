@@ -33,22 +33,16 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omnimusic.player.data.model.Album
-import com.omnimusic.player.ui.GLOBAL_BAR_HEIGHT
+import com.omnimusic.player.ui.rememberOmniTopPadding
 import com.omnimusic.player.ui.components.AlbumCard
 
-/**
- * Real Albums screen: a 2-column grid of album art with a Play overlay,
- * matching spec section 3. Sort header includes the "Include Singles"
- * checkbox from the reference design's sort sheet. Tapping an album card
- * will navigate to the album detail screen once that destination exists;
- * for now it's a no-op stub.
- */
 @Composable
 fun AlbumsScreen(
     modifier: Modifier = Modifier,
     viewModel: AlbumsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val topPadding = rememberOmniTopPadding()
 
     Box(modifier = modifier.fillMaxSize()) {
         when {
@@ -68,11 +62,10 @@ fun AlbumsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            // 🚀 إضافة حشوة علوية بمقدار شريط البحث تمامًا زي باقي الشاشات
             else -> Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = GLOBAL_BAR_HEIGHT + 16.dp)
+                    .padding(top = topPadding)
             ) {
                 AlbumsHeader(
                     sortOption = uiState.sortOption,
