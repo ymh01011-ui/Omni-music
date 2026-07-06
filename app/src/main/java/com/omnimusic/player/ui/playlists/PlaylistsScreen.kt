@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omnimusic.player.data.model.Playlist
 import com.omnimusic.player.data.model.Track
+import com.omnimusic.player.ui.GLOBAL_BAR_HEIGHT
 import com.omnimusic.player.ui.components.PlaylistCard
 import com.omnimusic.player.ui.components.TrackRow
 import com.omnimusic.player.ui.theme.AccentFavoritesRed
@@ -77,6 +78,8 @@ fun PlaylistsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                // 🚀 إضافة حشوة علوية بمقدار شريط البحث تمامًا زي باقي الشاشات
+                .padding(top = GLOBAL_BAR_HEIGHT + 16.dp)
         ) {
             when {
                 uiState.isLoading -> Box(
