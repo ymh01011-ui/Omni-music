@@ -37,10 +37,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.omnimusic.player.ui.GLOBAL_BAR_HEIGHT
-import com.omnimusic.player.ui.LocalPlaybackViewModel
+import com.omnimusic.player.ui.rememberOmniTopPadding
+import com.omnimusic.player.ui.LocalOmniPlaybackViewModel
 import com.omnimusic.player.ui.components.TrackRow
 import com.omnimusic.player.util.AudioPermission
 
@@ -51,7 +52,8 @@ fun SongsScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    val playbackViewModel = LocalPlaybackViewModel.current
+    val playbackViewModel = LocalOmniPlaybackViewModel.current
+    val topPadding = rememberOmniTopPadding()
 
     var hasPermission by rememberSaveable {
         mutableStateOf(
@@ -93,6 +95,7 @@ fun SongsScreen(
             }
             else -> SongsList(
                 uiState = uiState,
+                topPadding = topPadding,
                 onSortOptionClick = viewModel::setSortOption,
                 onTrackClick = { index -> playbackViewModel.playQueue(uiState.tracks, index) },
             )
@@ -126,14 +129,14 @@ private fun PermissionRequest(onRequestPermission: () -> Unit) {
 @Composable
 private fun SongsList(
     uiState: SongsUiState,
+    topPadding: Dp,
     onSortOptionClick: (SongSortOption) -> Unit,
     onTrackClick: (index: Int) -> Unit,
 ) {
-    // 🚀 حشوة علوية بمقدار شريط البحث + نفس مسافة التنفس المستخدمة في باقي الشاشات
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = GLOBAL_BAR_HEIGHT + 16.dp)
+            .padding(top = topPadding)
     ) {
         SongsHeader(
             sortOption = uiState.sortOption,
