@@ -1,0 +1,14 @@
+package com.omnimusic.player.ui
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+/**
+ * تذكر الـ padding العلوي الديناميكي
+ * يتزامن مع ارتفاع شريط البحث العائم
+ */
+@Composable
+fun rememberOmniTopPadding(): Dp {
+    return GLOBAL_BAR_HEIGHT
+}
