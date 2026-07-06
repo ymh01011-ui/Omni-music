@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omnimusic.player.data.model.Artist
 import com.omnimusic.player.data.repository.ArtistImageResult
+import com.omnimusic.player.ui.GLOBAL_BAR_HEIGHT
 import com.omnimusic.player.ui.components.ArtistCard
 
 /**
@@ -65,7 +66,12 @@ fun ArtistsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            else -> Column(modifier = Modifier.fillMaxSize()) {
+            // 🚀 إضافة حشوة علوية بمقدار شريط البحث تمامًا زي باقي الشاشات
+            else -> Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = GLOBAL_BAR_HEIGHT + 16.dp)
+            ) {
                 ArtistsHeader(
                     sortOption = uiState.sortOption,
                     sortAscending = uiState.sortAscending,
