@@ -129,11 +129,11 @@ private fun SongsList(
     onSortOptionClick: (SongSortOption) -> Unit,
     onTrackClick: (index: Int) -> Unit,
 ) {
-    // 🚀 إضافة حشوة علوية بمقدار شريط البحث لتبدأ ترويسة الصفحة "فخمة" ونظيفة في مكانها الصحيح تماماً
+    // 🚀 حشوة علوية بمقدار شريط البحث + نفس مسافة التنفس المستخدمة في باقي الشاشات
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = GLOBAL_BAR_HEIGHT + 8.dp)
+            .padding(top = GLOBAL_BAR_HEIGHT + 16.dp)
     ) {
         SongsHeader(
             sortOption = uiState.sortOption,
