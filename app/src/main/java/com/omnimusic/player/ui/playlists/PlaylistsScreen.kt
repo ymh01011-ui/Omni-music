@@ -43,12 +43,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omnimusic.player.data.model.Playlist
 import com.omnimusic.player.data.model.Track
-import com.omnimusic.player.ui.rememberOmniTopPadding
 import com.omnimusic.player.ui.components.PlaylistCard
 import com.omnimusic.player.ui.components.TrackRow
 import com.omnimusic.player.ui.theme.AccentFavoritesRed
 import com.omnimusic.player.ui.theme.OmniGreen
 
+/**
+ * Real Playlists screen, per spec section 3: Favorites/History outline
+ * toggle buttons at the top, a mosaic-cover playlist grid below, and a
+ * create-playlist FAB. Selecting Favorites or History switches the body to
+ * a flat track list for that source; deselecting returns to the grid.
+ */
 @Composable
 fun PlaylistsScreen(
     modifier: Modifier = Modifier,
@@ -56,7 +61,6 @@ fun PlaylistsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
-    val topPadding = rememberOmniTopPadding()
 
     Scaffold(
         modifier = modifier,
@@ -73,7 +77,6 @@ fun PlaylistsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(top = topPadding)
         ) {
             when {
                 uiState.isLoading -> Box(
