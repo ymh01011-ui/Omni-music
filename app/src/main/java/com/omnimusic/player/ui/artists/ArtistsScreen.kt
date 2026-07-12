@@ -32,16 +32,20 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omnimusic.player.data.model.Artist
 import com.omnimusic.player.data.repository.ArtistImageResult
-import com.omnimusic.player.ui.rememberOmniTopPadding
 import com.omnimusic.player.ui.components.ArtistCard
 
+/**
+ * Real Artists screen: a 3-column grid of circular artist images (per spec
+ * section 3), sortable by Name / Song count. Tapping a card will navigate
+ * to the artist detail screen once that destination exists; for now it's a
+ * no-op stub.
+ */
 @Composable
 fun ArtistsScreen(
     modifier: Modifier = Modifier,
     viewModel: ArtistsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val topPadding = rememberOmniTopPadding()
 
     Box(modifier = modifier.fillMaxSize()) {
         when {
@@ -61,11 +65,7 @@ fun ArtistsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            else -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = topPadding)
-            ) {
+            else -> Column(modifier = Modifier.fillMaxSize()) {
                 ArtistsHeader(
                     sortOption = uiState.sortOption,
                     sortAscending = uiState.sortAscending,
