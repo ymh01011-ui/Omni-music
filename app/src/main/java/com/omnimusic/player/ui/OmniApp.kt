@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.ripple.ripple
+import androidx.compose.material.ripple
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -115,7 +115,6 @@ fun OmniApp() {
             NavHost(
                 navController = navController,
                 startDestination = OmniDestination.Home.route,
-                // التعديل الجوهري: نأخذ الحشو السفلي فقط لحماية أزرار التنقل والـ MiniPlayer، ونلغي الحشو العلوي تماماً لتتحرر الشاشة وتصعد لأعلى
                 modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
                 enterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
                 exitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
@@ -123,7 +122,6 @@ fun OmniApp() {
                 popExitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
             ) {
                 composable(OmniDestination.Home.route) {
-                    // تمرير Modifier.fillMaxSize() لضمان مطابقة الشاشة
                     HomeScreen(modifier = Modifier.fillMaxSize())
                 }
                 composable(OmniDestination.Albums.route) { AlbumsScreen() }
