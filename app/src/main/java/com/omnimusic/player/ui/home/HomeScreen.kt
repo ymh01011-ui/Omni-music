@@ -109,6 +109,7 @@ private fun RecentlyPlayedAlbumsSection(data: HomeData) {
                 album = album,
                 onClick = { /* TODO: navigate to album detail once that destination exists */ },
                 onPlayClick = { /* TODO: start playback once the playback engine exists */ },
+                onMenuClick = { /* TODO: implement album menu handler */ },
             )
         }
     }
