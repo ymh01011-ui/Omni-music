@@ -37,14 +37,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.omnimusic.player.ui.GLOBAL_BAR_HEIGHT
 import com.omnimusic.player.ui.LocalPlaybackViewModel
 import com.omnimusic.player.ui.components.TrackRow
 import com.omnimusic.player.util.AudioPermission
 
+/**
+ * Real Songs screen: MediaStore-backed track list with a sort header
+ * ("Name ↑", song count, Shuffle icon) per spec section 3. Grid/List toggle
+ * and the full 3-dot context menu (Play next / Add to playlist / Go to
+ * album / Tag editor / Edit lyrics, etc.) are added once those destinations
+ * exist; for now "More options" is a stub that will be wired to the full
+ * menu in a later step.
+ */
 @Composable
 fun SongsScreen(
     modifier: Modifier = Modifier,
@@ -53,7 +59,6 @@ fun SongsScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val playbackViewModel = LocalPlaybackViewModel.current
-    val topPadding = GLOBAL_BAR_HEIGHT
 
     var hasPermission by rememberSaveable {
         mutableStateOf(
@@ -68,6 +73,8 @@ fun SongsScreen(
         if (granted) viewModel.refreshLibrary()
     }
 
+    // Kick off the first scan as soon as permission is already granted
+    // (e.g. on subsequent app launches after the user granted it once).
     LaunchedEffect(hasPermission) {
         if (hasPermission) viewModel.refreshLibrary()
     }
@@ -95,7 +102,6 @@ fun SongsScreen(
             }
             else -> SongsList(
                 uiState = uiState,
-                topPadding = topPadding,
                 onSortOptionClick = viewModel::setSortOption,
                 onTrackClick = { index -> playbackViewModel.playQueue(uiState.tracks, index) },
             )
@@ -129,15 +135,10 @@ private fun PermissionRequest(onRequestPermission: () -> Unit) {
 @Composable
 private fun SongsList(
     uiState: SongsUiState,
-    topPadding: Dp,
     onSortOptionClick: (SongSortOption) -> Unit,
     onTrackClick: (index: Int) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = topPadding)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         SongsHeader(
             sortOption = uiState.sortOption,
             sortAscending = uiState.sortAscending,
@@ -150,7 +151,7 @@ private fun SongsList(
                 TrackRow(
                     track = track,
                     onClick = { onTrackClick(index) },
-                    onMoreClick = { /* TODO */ },
+                    onMoreClick = { /* TODO: open the full 3-dot context menu (spec section 3) */ },
                 )
             }
         }
@@ -176,7 +177,7 @@ private fun SongsHeader(
         Box {
             Row(
                 modifier = Modifier.clickable { sortMenuExpanded = true },
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = sortOption.label(),
@@ -216,7 +217,7 @@ private fun SongsHeader(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            IconButton(onClick = { /* TODO */ }) {
+            IconButton(onClick = { /* TODO: shuffle-play all once playback engine exists */ }) {
                 Icon(
                     imageVector = Icons.Filled.Shuffle,
                     contentDescription = "Shuffle",
