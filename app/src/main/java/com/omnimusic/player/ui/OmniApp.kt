@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.ripple
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,6 +55,7 @@ import com.omnimusic.player.ui.navigation.OmniDestination
 import com.omnimusic.player.ui.playlists.PlaylistsScreen
 import com.omnimusic.player.ui.songs.SongsScreen
 import com.omnimusic.player.ui.theme.OmniGreen
+import com.omnimusic.player.ui.theme.OmniSurfaceElevated
 
 /**
  * Animation timing per design spec section 2: short (200-300ms) fade-through
@@ -115,15 +113,13 @@ fun OmniApp() {
             NavHost(
                 navController = navController,
                 startDestination = OmniDestination.Home.route,
-                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
+                modifier = Modifier.padding(innerPadding),
                 enterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
                 exitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
                 popEnterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) },
                 popExitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION_MS)) },
             ) {
-                composable(OmniDestination.Home.route) {
-                    HomeScreen(modifier = Modifier.fillMaxSize())
-                }
+                composable(OmniDestination.Home.route) { HomeScreen() }
                 composable(OmniDestination.Albums.route) { AlbumsScreen() }
                 composable(OmniDestination.Songs.route) { SongsScreen() }
                 composable(OmniDestination.Playlists.route) { PlaylistsScreen() }
@@ -138,7 +134,9 @@ private fun OmniBottomNavBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    NavigationBar {
+    NavigationBar(
+        containerColor = OmniSurfaceElevated // 🎨 تم تغيير لون خلفية البار ليتطابق مع الميني بلاير تماماً
+    ) {
         OmniDestination.bottomNavItems.forEach { destination ->
             val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
 
@@ -164,8 +162,6 @@ private fun OmniBottomNavBar(navController: NavHostController) {
  * Custom nav bar item replicating Metro/RetroMusic's motion: the icon lifts
  * up and the label fades + expands in underneath it when selected. Unselected
  * items show the icon only, with no reserved space for a label.
- *
- * Ripple color is set to OmniGreen to match the theme.
  */
 @Composable
 private fun RowScope.OmniNavItem(
@@ -193,17 +189,12 @@ private fun RowScope.OmniNavItem(
     Column(
         modifier = Modifier
             .weight(1f)
-            .fillMaxHeight()
             .selectable(
                 selected = selected,
                 onClick = onClick,
                 role = Role.Tab,
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(
-                    bounded = false,
-                    radius = 28.dp,
-                    color = OmniGreen,
-                ),
+                indication = null // 🚫 تم تعيين القيمة إلى null لإزالة الهايلايت الأبيض عند الضغط
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
